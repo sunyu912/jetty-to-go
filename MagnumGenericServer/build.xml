@@ -1,0 +1,137 @@
+<project default="war">
+
+    <!-- We use time stamp to differeniate versions -->
+    <tstamp>
+        <format property="deploy.time.stamp" pattern="yyyy-MM-dd'T'HH-mm-ss" timezone="US/Central" />
+    </tstamp>
+    <property name="deploy.time.stamp" value="timestamp" />
+
+    <!-- Path and variables configuration -->
+	<property name="project.dir" location="./"/>
+	<property name="properties.dir" location="${project.dir}/configuration/properties" />
+	<property name="startupScripts.dir" location="${project.dir}/configuration/startupScripts" />
+	<property name="aws.project.dir" location="../../hd4ar/HD4ARAWSCommon"/>
+	
+	<!-- Properties related to upload the built artefacts to S3 -->
+	<property name="server.name" value="MarsSuperIntendentServer" />
+	<property name="server.version" value="1.0" />
+	<property name="server.s3path" value="s3://hd4ar-deployer/${server.name}"/>
+				
+	<target name="compile-war" depends="compile,war"></target>
+	
+	<target name="compile">		
+		<javac   destdir="${project.dir}/bin"
+		         debug="on"
+		         source="1.6">
+			<src path="${project.dir}/src"/>
+			
+			<classpath>
+		      <fileset dir="${project.dir}/libs">
+		        <include name="**/*.jar"/>
+		      </fileset>
+		      <fileset dir="${aws.project.dir}/libs">
+		        <include name="**/*.jar"/>
+		      </fileset>
+			  <path location="${aws.project.dir}/bin"/>
+			</classpath>
+		</javac>
+		
+		<copy file="${project.dir}/src/log4j.properties" todir="${project.dir}/bin"/>
+	</target>
+	
+	<target name="war" description="--> Creates self-executing war">
+	  <property name="staging.dir" location="${project.dir}/staging"/>
+	  <property name="webapp.dir" location="${project.dir}/src/"/>
+	
+      <echo>${deploy.time.stamp} </echo>
+	  <mkdir dir="${staging.dir}"/>
+	  <mkdir dir="${project.dir}/dist" />
+	
+	  <!-- assumes you have all of your war content (excluding classes and libraries) already structured in a directory called src/webapp -->
+	  <!-- e.g. -->
+	  <!-- src/webapp/index.html -->
+	  <!-- src/webapp/WEB-INF/web.xml -->
+	  <!-- src/webapp/WEB-INF/classes/my.properties -->
+	  <!-- etc ... -->
+	  <copy todir="${staging.dir}/webapp">
+	    <fileset dir="${project.dir}/war" includes="**/*"/>
+	  </copy>
+	  <copy todir="${staging.dir}/libs">
+	    <fileset dir="${project.dir}/libs" includes="**/*" excludes="jetty-*.jar,sshexec-multiple.jar"/>
+	  	<fileset dir="${aws.project.dir}/libs" includes="**/*"/>
+	  </copy>
+	  <copy todir="${staging.dir}/classes">
+	    <fileset dir="${project.dir}/bin" includes="**/*"/>
+	  	<fileset dir="${aws.project.dir}/bin" includes="**/*"/>
+	  </copy>
+	
+	  <unjar dest="${staging.dir}/webapp">
+	    <!-- you'll have to locate these jars or appropriate versions; note that these include JSP support -->
+	    <!-- you might find some of them in the downloaded Jetty .tgz -->
+	    <fileset dir="${project.dir}/libs">
+	      <include name="jetty-*.jar"/>
+	      <include name="servlet-api-*.jar"/>
+	      <include name="commons-io-*.jar"/>
+	    </fileset>
+	    <patternset><!-- to exclude some of the stuff we don't really need -->
+	      <exclude name="META-INF/**/*"/>
+	      <exclude name="images/**/*"/>
+	      <exclude name=".options"/>
+	      <exclude name="about.html"/>
+	      <exclude name="jdtCompilerAdapter.jar"/>
+	      <exclude name="plugin*"/>
+	    </patternset>
+	  </unjar>
+	
+	  <!-- copy in the class file built from the above EmbeddedJettyServer.java -->
+	  <copy todir="${staging.dir}/webapp">
+	    <fileset dir="${staging.dir}/classes" includes="io/magnum/jetty/server/EmbeddedJettyServer.class"/>
+	  </copy>
+	
+	  <echo>Generating war file using web.xml</echo>	
+	  <war destfile="${project.dir}/dist/server.war" webxml="${staging.dir}/webapp/WEB-INF/web.xml">
+	    <fileset dir="${staging.dir}/webapp" includes="**/*"/>
+	    <classes dir="${staging.dir}/classes"/><!-- your application classes -->
+	    <lib dir="${staging.dir}/libs"/><!-- application dependency jars -->
+	    <manifest>
+	      <!-- add the Main-Class attribute that will execute our server class -->
+	      <attribute name="Main-Class" value="io.magnum.jetty.server.EmbeddedJettyServer"/>
+	    </manifest>
+	  </war>
+
+	  <delete dir="${staging.dir}"/>
+	</target>
+	
+	<target name="copy-for-servers" depends="war">
+		<echo>Copying files for ${server.name}...</echo>
+		<copy file="${project.dir}/dist/marssi.war" todir="${project.dir}/dist/${server.name}"/>
+		<copy todir="${project.dir}/dist/${server.name}">
+			<fileset dir="${properties.dir}/${server.name}" includes="*"/>
+		</copy>
+		<copy todir="${project.dir}/dist/${server.name}">
+			<fileset dir="${startupScripts.dir}/${server.name}" includes="*"/>
+		</copy>
+	</target>
+	
+	<!-- This target relies on s3cmd. Make sure s3cmd (http://s3tools.org/s3cmd) is installed correctly -->
+	<target name="upload" depends="copy-for-servers">		
+		<echo>Generating version file for ${deploy.time.stamp}...</echo>			
+        <echo file="${project.dir}/dist/CURRENT_VERSION">${deploy.time.stamp}</echo>
+        <echo>Uploading files for ${server.name}...</echo>
+        
+        <!-- Upload built package -->
+		<exec executable="s3cmd">
+			<arg value="put" />
+			<arg value="--recursive" />
+			<arg value="${project.dir}/dist/${server.name}/" />
+			<arg value="${server.s3path}/${deploy.time.stamp}/" />
+		</exec>
+		
+		<!-- Upload the current version number -->
+		<exec executable="s3cmd">
+            <arg value="put" />
+            <arg value="${project.dir}/dist/CURRENT_VERSION" />
+            <arg value="${server.s3path}/" />
+        </exec>
+	</target>
+</project>
