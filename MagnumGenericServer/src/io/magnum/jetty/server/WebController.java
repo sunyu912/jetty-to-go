@@ -1,5 +1,7 @@
 package io.magnum.jetty.server;
 
+import io.magnum.jetty.server.data.AppConfigLoader;
+import io.magnum.jetty.server.data.TrendingSites;
 import io.magnum.jetty.server.data.provider.DataProvider;
 
 import javax.servlet.http.HttpServletResponse;
@@ -13,9 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 
 @Controller
-public class WebController {
-	
-	private static final String HEALTH_CHECK_API_PATH = "ping";
+public class WebController {	
 	
 	/**
      * Jackson JSON mapper. This might be more convenient to use then
@@ -34,12 +34,17 @@ public class WebController {
 		this.dataProvider = dataProvider;
 	}
 
-	@RequestMapping(value = "add", method = RequestMethod.GET)
-	public void addLocation(HttpServletResponse response) throws Exception {
-		
+	@RequestMapping(value = "ar/site/trending", method = RequestMethod.GET)
+	public void getTrendingSites(HttpServletResponse response) throws Exception {
+		response.getWriter().write(mapper.writeValueAsString(TrendingSites.getTrendingSites()));
 	}
 	
-	@RequestMapping(value = HEALTH_CHECK_API_PATH, method = RequestMethod.GET)
+	@RequestMapping(value = "ar/app/config", method = RequestMethod.GET)
+    public void getConfigurations(HttpServletResponse response) throws Exception {
+        response.getWriter().write(mapper.writeValueAsString(AppConfigLoader.getAppConfig()));        
+    }
+	
+	@RequestMapping(value = "ping", method = RequestMethod.GET)
 	public void healthCheck(HttpServletResponse response) throws Exception {	
 	    response.setStatus(200);
 		response.getWriter().write("success");
