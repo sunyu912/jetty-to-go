@@ -50,6 +50,16 @@
 			<bean factory-bean="awsContext" factory-method="getDynamoDBClient" />
 		</constructor-arg>
 	</bean>
+	
+	<bean id="s3Helper" class="com.hd4ar.awscommon.S3CmdBasedAwsS3Helper">
+        <constructor-arg>
+            <bean factory-bean="awsContext" factory-method="getS3Client" />
+        </constructor-arg>
+        <property name="s3CmdHome" value="${s3cmdHome}"></property>
+    </bean>
 
+	<bean id="screenshotManager" class="io.magnum.jetty.server.screenshot.PhantomJSScreenshotManager">        
+    </bean>
+    
 	<context:annotation-config />
 </beans>

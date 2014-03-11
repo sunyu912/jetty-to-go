@@ -1,6 +1,8 @@
 package io.magnum.jetty.server;
 
+import io.magnum.jetty.server.data.ScreenshotRecord;
 import io.magnum.jetty.server.data.provider.DataProvider;
+import io.magnum.jetty.server.screenshot.ScreenshotManager;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,12 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @Controller
-public class WebController {
-	
-	private static final String HEALTH_CHECK_API_PATH = "ping";
+public class WebController {	
 	
 	/**
      * Jackson JSON mapper. This might be more convenient to use then
@@ -30,16 +31,22 @@ public class WebController {
     private DataProvider dataProvider;
 	
 	@Autowired
+	private ScreenshotManager screenshotManager;
+	
+	@Autowired
 	public WebController(DataProvider dataProvider) {
 		this.dataProvider = dataProvider;
 	}
 
-	@RequestMapping(value = "add", method = RequestMethod.GET)
-	public void addLocation(HttpServletResponse response) throws Exception {
-		
+	@RequestMapping(value = "screenshot", method = RequestMethod.GET)
+	public void getScreenshot(
+	        @RequestParam("url") String url,
+	        HttpServletResponse response) throws Exception {
+	    ScreenshotRecord record = screenshotManager.getScreenshot(url);
+	    response.getWriter().write(mapper.writeValueAsString(record));
 	}
 	
-	@RequestMapping(value = HEALTH_CHECK_API_PATH, method = RequestMethod.GET)
+	@RequestMapping(value = "ping", method = RequestMethod.GET)
 	public void healthCheck(HttpServletResponse response) throws Exception {	
 	    response.setStatus(200);
 		response.getWriter().write("success");
