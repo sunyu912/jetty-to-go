@@ -56,5 +56,7 @@
 	<classpathentry kind="lib" path="libs/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-log4j12-1.7.5.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/HD4ARAWSCommon"/>
+	<classpathentry kind="lib" path="libs/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="libs/commons-fileupload-1.2.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

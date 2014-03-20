@@ -51,14 +51,21 @@
 		</constructor-arg>
 	</bean>
 	
+	<bean id="multipartResolver"
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+
+        <!-- one of the properties available; the maximum file size in bytes -->
+        <property name="maxUploadSize" value="1000000" />
+    </bean>
+    
 	<bean id="s3Helper" class="com.hd4ar.awscommon.S3CmdBasedAwsS3Helper">
         <constructor-arg>
             <bean factory-bean="awsContext" factory-method="getS3Client" />
         </constructor-arg>
         <property name="s3CmdHome" value="${s3cmdHome}"></property>
     </bean>
-
-	<bean id="screenshotManager" class="io.magnum.jetty.server.screenshot.PhantomJSScreenshotManager">        
+    
+	<bean id="loadTestManager" class="io.magnum.jetty.server.loadtest.JMeterLoadTestManager">        
     </bean>
     
 	<context:annotation-config />
