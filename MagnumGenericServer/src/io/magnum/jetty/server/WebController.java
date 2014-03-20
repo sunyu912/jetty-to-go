@@ -28,8 +28,8 @@ public class WebController {
             configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }};
     
-	/** Provider to access and manage all data */
-	@SuppressWarnings("unused")
+	/** Provider to access and manage all data */	
+    @Autowired
     private DataProvider dataProvider;
 	
 	@Autowired
@@ -42,19 +42,19 @@ public class WebController {
 	
 	@RequestMapping(value = "test/run", method = RequestMethod.POST)
     public void runTest(
+            @RequestParam(value="testId", required=false) String testId,
             @RequestParam("testPlan") MultipartFile imagefile,
             HttpServletResponse response) throws Exception {
         
-        String testId = loadTestManager.runTest(imagefile.getInputStream());       
-        response.getWriter().write(mapper.writeValueAsString(new RunTestResponse(testId)));
+        String id = loadTestManager.runTest(testId, imagefile.getInputStream());
+        response.getWriter().write(mapper.writeValueAsString(new RunTestResponse(id)));
     }
 	
 	@RequestMapping(value = "test/run/{testId}", method = RequestMethod.GET)
     public void getTestRunResult(
             @PathVariable("testId") String testId,
-            HttpServletResponse response) throws Exception {
-
-        response.getWriter().write(mapper.writeValueAsString(null));
+            HttpServletResponse response) throws Exception {	    
+        response.getWriter().write(mapper.writeValueAsString(dataProvider.getTestInfo(testId)));
     }
 	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)

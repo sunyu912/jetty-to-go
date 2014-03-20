@@ -1,5 +1,8 @@
 package io.magnum.jetty.server.loadtest;
 
+import io.magnum.jetty.server.data.TestInfo;
+import io.magnum.jetty.server.data.provider.DataProvider;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,14 +40,19 @@ public class JMeterLoadTestManager implements LoadTestManager {
     @Autowired
     private AwsS3Helper s3Helper;
     
+    @Autowired
+    private DataProvider dataProvider;
+    
     public JMeterLoadTestManager() {
         executor = Executors.newFixedThreadPool(1);
     }
     
     @Override
-    public String runTest(InputStream in) {
+    public String runTest(String testId, InputStream in) {
         // create test ID
-        String testId = UUID.randomUUID().toString();
+        if (testId == null) {
+            testId = UUID.randomUUID().toString();
+        }
         
         // create file
         String testFolder = TEST_BASE_FOLDER + testId;
@@ -62,6 +70,7 @@ public class JMeterLoadTestManager implements LoadTestManager {
             logger.error("Failed to save the input test spec file at {}", file.getAbsolutePath(), e);
         }             
         
+        dataProvider.updateTestInfo(testId, TestInfo.PROCESSING);
         // execute
         executor.submit(new JMeterTestExecution(testId, testFolder, file.getAbsolutePath()));
         
@@ -94,14 +103,18 @@ public class JMeterLoadTestManager implements LoadTestManager {
                 // run jmeter
                 exec.execute();
                 // sync files to s3                
-                s3Helper.syncLocalFilesToS3(testFolder, S3_BUCKET, testId);
+                s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
                 // update test status
+                dataProvider.updateTestInfo(testId, TestInfo.COMPLETED);
             } catch (ExecuteException e) {
                 logger.error("Failed to execute jmeter", e);
+                dataProvider.updateTestInfo(testId, TestInfo.FAILED);
             } catch (IOException e) {
                 logger.error("Failed to execute jmeter", e);
+                dataProvider.updateTestInfo(testId, TestInfo.FAILED);
             } catch (AbortException e) {
                 logger.error("Failed to sync files to S3", e);
+                dataProvider.updateTestInfo(testId, TestInfo.FAILED);
             }
         }
     }

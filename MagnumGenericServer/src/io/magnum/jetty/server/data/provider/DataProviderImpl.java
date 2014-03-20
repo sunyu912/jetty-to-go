@@ -1,5 +1,7 @@
 package io.magnum.jetty.server.data.provider;
 
+import io.magnum.jetty.server.data.TestInfo;
+
 import com.amazonaws.services.dynamodb.AmazonDynamoDB;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBMapper;
 
@@ -26,12 +28,31 @@ public class DataProviderImpl implements DataProvider {
 	private AmazonDynamoDB dynamoDBClient;
 	
 	/** DynamoDB Object Mapper */
-	@SuppressWarnings("unused")
     private DynamoDBMapper dynamoDBMapper;
 	
 	
 	public DataProviderImpl(AmazonDynamoDB dynamoDBClient) {
 		this.dynamoDBClient = dynamoDBClient;
 		this.dynamoDBMapper = new DynamoDBMapper(dynamoDBClient);
-	}	
+	}
+
+    @Override
+    public TestInfo updateTestInfo(String id, String status) {
+        TestInfo testInfo = dynamoDBMapper.load(TestInfo.class, id);
+        if (testInfo == null) {
+            testInfo = new TestInfo();
+            testInfo.setId(id);
+            testInfo.setTimestamp(System.currentTimeMillis());
+            testInfo.setStatus(status);
+        } else {
+            testInfo.setStatus(status);
+        }        
+        dynamoDBMapper.save(testInfo);
+        return testInfo;        
+    }
+
+    @Override
+    public TestInfo getTestInfo(String id) {        
+        return dynamoDBMapper.load(TestInfo.class, id);
+    }	
 }
