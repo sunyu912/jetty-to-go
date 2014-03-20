@@ -4,6 +4,7 @@ import io.magnum.jetty.server.data.RunTestResponse;
 import io.magnum.jetty.server.data.provider.DataProvider;
 import io.magnum.jetty.server.loadtest.LoadTestManager;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 
 @Controller
@@ -55,6 +57,16 @@ public class WebController {
             @PathVariable("testId") String testId,
             HttpServletResponse response) throws Exception {	    
         response.getWriter().write(mapper.writeValueAsString(dataProvider.getTestInfo(testId)));
+    }
+	
+	@RequestMapping(value = "test/run/{testId}/checker", method = RequestMethod.GET)
+    public ModelAndView getTestRunChecker(
+            @PathVariable("testId") String testId,
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception {	    	    
+	    ModelAndView modelAndView = new ModelAndView("test_result");
+        modelAndView.addObject("testInfo", dataProvider.getTestInfo(testId));                
+        return modelAndView;        
     }
 	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)
