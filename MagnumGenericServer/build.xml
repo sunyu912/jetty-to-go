@@ -13,9 +13,9 @@
 	<property name="aws.project.dir" location="../../hd4ar/HD4ARAWSCommon"/>
 	
 	<!-- Properties related to upload the built artefacts to S3 -->
-	<property name="server.name" value="MarsSuperIntendentServer" />
+	<property name="server.name" value="ROARTestDriverService" />
 	<property name="server.version" value="1.0" />
-	<property name="server.s3path" value="s3://hd4ar-deployer/${server.name}"/>
+	<property name="server.s3path" value="s3://magnum-deployer/${server.name}"/>
 				
 	<target name="compile-war" depends="compile,war"></target>
 	
@@ -104,7 +104,7 @@
 	
 	<target name="copy-for-servers" depends="war">
 		<echo>Copying files for ${server.name}...</echo>
-		<copy file="${project.dir}/dist/marssi.war" todir="${project.dir}/dist/${server.name}"/>
+		<copy file="${project.dir}/dist/server.war" todir="${project.dir}/dist/${server.name}"/>
 		<copy todir="${project.dir}/dist/${server.name}">
 			<fileset dir="${properties.dir}/${server.name}" includes="*"/>
 		</copy>
