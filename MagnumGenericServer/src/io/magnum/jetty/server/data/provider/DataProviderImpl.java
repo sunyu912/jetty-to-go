@@ -1,7 +1,12 @@
 package io.magnum.jetty.server.data.provider;
 
+import java.util.List;
+
+import io.magnum.jetty.server.data.ScreenshotRecord;
+
 import com.amazonaws.services.dynamodb.AmazonDynamoDB;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodb.datamodeling.DynamoDBScanExpression;
 
 /**
  * The default implementation for DataProvider based
@@ -33,5 +38,19 @@ public class DataProviderImpl implements DataProvider {
 	public DataProviderImpl(AmazonDynamoDB dynamoDBClient) {
 		this.dynamoDBClient = dynamoDBClient;
 		this.dynamoDBMapper = new DynamoDBMapper(dynamoDBClient);
-	}	
+	}
+
+    @Override
+    public void addScreenshotRecord(ScreenshotRecord record) {
+        dynamoDBMapper.save(record);
+    }
+
+    @Override
+    public List<ScreenshotRecord> listScreenshots(String url) {
+        if (url == null) {
+            DynamoDBScanExpression expression = new DynamoDBScanExpression();
+            return dynamoDBMapper.scan(ScreenshotRecord.class, expression);
+        }
+        return null;
+    }	
 }

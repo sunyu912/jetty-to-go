@@ -1,11 +1,203 @@
-<html lang="en">
+<html>
 
 <head>
-	<title>Generic Jetty Server by Magnum</title>
+<style type="text/css">
+b#title {
+color: #F88017;
+font-family: Arial;
+text-indent: 50px;	
+font-size: 20;
+position:absolute;
+left:7px;
+top: 42px;
+}
+h2 {
+color: #F88017;
+font-family: Arial;
+text-indent: 70px;
+}
+body {
+font-family: Arial;
+font-size: 14;
+}
+select {
+font-family: Arial;
+}
+input {
+font-family: Arial;
+}
+urltext {
+font-size: 14;
+margin-top:10px;
+margin-bottom:10px;
+}
+table.block { 
+border-width: 3px;
+border-style: solid;
+border-collapse: collapse;
+border-color: #A6CDDE;
+}
+table.error {
+border-width: 3px;
+border-style: solid;
+border-collapse: collapse;
+border-color: #F6358A;
+}
+tr.headrow {
+font-family: Arial;
+font-size: 14;
+font-weight: bold;
+background-color: #A6CDDE;
+width: 650; 
+}
+tr.error {
+font-family: Arial;
+font-size: 14;
+font-weight: bold;
+background-color: #F6358A;
+width: 530;
+}
+tr.datarow {
+border-width: 2px;
+border-style: solid;
+border-color: #FFFFFF;
+}
+td.cell-no {
+font-family: Arial;
+font-weight: bold;
+font-size: 12;
+background-color: #EEE;
+width: 40;
+}
+td.cell-label {
+font-family: Arial;
+font-weight: bold;
+font-size: 12;
+background-color: #EEE;
+width: 300;
+}
+td.cell-info {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 350;
+}
+td.cell-info2 {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 203;
+}
+td.cell-info3 {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 50;
+}
+td.cell-info4 {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 310;
+}
+td.cell-info5 {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 237;
+}
+td.cell-error {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 530;
+}
+pImg {
+border:0;
+padding-top:25px;
+top:200px;
+}
+resultSection {
+margin-top: 50;
+font-size: 10;
+}
+
+#processingImg {
+    top: 77;
+    position:absolute;
+    border: 0;
+}
+#resultImageImg {
+    padding-top: 5;    
+    display: block;
+}
+
+</style>
+
+<script src="http://code.jquery.com/jquery-1.9.0.js"></script>
+<script src="http://code.jquery.com/jquery-migrate-1.0.0.js"></script>
+    
+<!--this is click result-->
+<script>
+    function captureScreenshot() {
+    	var siteUrl = $('#siteurl').val();
+    	var screenshotUrl = "/v1/bbds/screenshot";    
+    	
+    	$('#gobutton').attr('disabled', 'disabled');
+    	$("#processingImg").attr("src", "./icons/processing.gif");
+    	$("#processingImg").attr("width", "24");
+    	$("#processingImg").attr("height", "24");
+        
+    	$.ajax(
+            {
+                type : "GET",
+                url  : screenshotUrl,
+                data : {
+                	url : siteUrl
+                },
+                success : function(result) {
+                	$('#gobutton').removeAttr("disabled");
+                    $('#processingImg').removeAttr("src");
+                    $('#processingImg').removeAttr("width");
+                    $('#processingImg').removeAttr("height");
+                    
+                    var resultData = jQuery.parseJSON( result );                    
+                    // update href
+                    $("#resultImageUrl").attr("href", resultData.imageS3Url);
+                    $("#resultImageUrl").text(resultData.imageS3Url);
+                    // update img
+                    $("#resultImageImg").attr("src", resultData.imageS3Url);                    
+                },
+                error: function (jqXHR, exception) {
+                    alert("Failed to capture the screenshot.");
+                    
+                    $('#gobutton').removeAttr("disabled");
+                    $('#processingImg').removeAttr("src");
+                    $('#processingImg').removeAttr("width");
+                    $('#processingImg').removeAttr("height");
+                }
+            });
+    }    
+</script>
+    
+<title>BBDS Website Screenshot Camera</title>
 </head>
 
 <body>
-	Jetty server is running	
-</body>
+    <br>
+    <img src="./icons/camera.png" width="40" height="40"></img> <b id="title">BBDS Website Screenshot Camera</b>
+    <p/>
 
+    URL    
+    <input id="siteurl" type="text" name="searchFieldValue" style="width: 310px;">
+    <input id="gobutton" type="submit" value="Go" onclick="captureScreenshot()">
+    <img id="processingImg" align="bottom" src="" ></img>
+    <br>
+    
+    <div class="resultSection">
+	    <a id="resultImageUrl" class="urltext" href=""></a>
+	    <img id="resultImageImg" class="pImg" src=""></img>    	 
+    </div>
+    
+</body>
 </html>

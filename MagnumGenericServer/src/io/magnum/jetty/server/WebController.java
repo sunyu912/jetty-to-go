@@ -4,6 +4,8 @@ import io.magnum.jetty.server.data.ScreenshotRecord;
 import io.magnum.jetty.server.data.provider.DataProvider;
 import io.magnum.jetty.server.screenshot.ScreenshotManager;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 
 
 @Controller
@@ -27,7 +30,6 @@ public class WebController {
     }};
     
 	/** Provider to access and manage all data */
-	@SuppressWarnings("unused")
     private DataProvider dataProvider;
 	
 	@Autowired
@@ -43,8 +45,19 @@ public class WebController {
 	        @RequestParam("url") String url,
 	        HttpServletResponse response) throws Exception {
 	    ScreenshotRecord record = screenshotManager.getScreenshot(url);
+	    dataProvider.addScreenshotRecord(record);
 	    response.getWriter().write(mapper.writeValueAsString(record));
 	}
+	
+	@RequestMapping(value = "/list/screenshot", method = RequestMethod.GET)
+    public ModelAndView listScreenshots(
+            @RequestParam(value="url", required=false) String url,
+            HttpServletResponse response) throws Exception {	   
+        List<ScreenshotRecord> records = dataProvider.listScreenshots(url);
+        ModelAndView modelAndView = new ModelAndView("listScreenshots");
+        modelAndView.addObject("records", records);        
+        return modelAndView;
+    }
 	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)
 	public void healthCheck(HttpServletResponse response) throws Exception {	

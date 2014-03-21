@@ -26,6 +26,11 @@ public class PhantomJSScreenshotManager implements ScreenshotManager {
     
     @Override
     public ScreenshotRecord getScreenshot(String url) {
+        // normalize URL
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "http://" + url;
+        }
+        
         Long timestamp = System.currentTimeMillis();
         File tmpImageFile = null;
         try {
@@ -36,7 +41,8 @@ public class PhantomJSScreenshotManager implements ScreenshotManager {
         }
         
         // capture screenshot
-        Exec exec = new Exec("/usr/local/bin/phantomjs /usr/local/Cellar/phantomjs/1.9.7/share/phantomjs/examples/rasterize.js " 
+        //Exec exec = new Exec("/usr/local/bin/phantomjs /usr/local/Cellar/phantomjs/1.9.7/share/phantomjs/examples/rasterize.js "
+        Exec exec = new Exec("/home/ubuntu/phantomjs/bin/phantomjs /home/ubuntu/rasterize.js "
                 + url + " " + tmpImageFile.getAbsolutePath());
         try {
             logger.info("Capturing screenshot for url {}", url);
