@@ -69,6 +69,17 @@ public class WebController {
         return modelAndView;        
     }
 	
+	@RequestMapping(value = "test/run/list", method = RequestMethod.GET)
+    public ModelAndView getAllTestRunChecker(
+            @RequestParam(value="id", required=false) String id,
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception {                
+        ModelAndView modelAndView = new ModelAndView("list_test_result");
+        modelAndView.addObject("benchmarkRecords", dataProvider.listBenchmarkRecords(id));
+        modelAndView.addObject("title", id == null ? "All" : id);
+        return modelAndView;
+    }
+	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)
 	public void healthCheck(HttpServletResponse response) throws Exception {	
 	    response.setStatus(200);

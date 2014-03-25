@@ -1,0 +1,137 @@
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Set" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="io.magnum.jetty.server.data.BenchmarkRecord" %>
+
+<html>
+<head>
+    <title>Magnum Test Result Checker</title>
+    <script src="/js/jquery.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
+    <script type="text/javascript">
+	    function showResultPageInIFrame(url) {
+	    	$('#resultIFrame').attr('src', url);	
+	    } 
+    </script>
+    <style type="text/css">
+    
+        table.block { 
+		border-width: 3px;
+		border-style: solid;
+		border-collapse: collapse;
+		border-color: #A6CDDE;
+		}
+		table.error {
+		border-width: 3px;
+		border-style: solid;
+		border-collapse: collapse;
+		border-color: #F6358A;
+		}
+		tr.headrow {
+		font-family: Arial;
+		font-size: 14;
+		font-weight: bold;
+		background-color: #A6CDDE;
+		width: 650; 
+		}
+		tr.error {
+		font-family: Arial;
+		font-size: 14;
+		font-weight: bold;
+		background-color: #F6358A;
+		width: 530;
+		}
+		tr.datarow {
+		border-width: 2px;
+		border-style: solid;
+		border-color: #FFFFFF;
+		}
+		td.cell-label {
+		font-family: Arial;		
+		font-size: 12;
+		background-color: #EEE;
+		text-align: left;
+		width: 200;
+		}
+		td.cell-info {
+		font-family: Arial;
+		font-size: 12;
+		background-color: #EEE;
+		width: 300;
+		}
+		td.cell-info-short {
+        font-family: Arial;
+        font-size: 12;
+        background-color: #EEE;
+        width: 110;
+        }
+
+        .appName {
+            font-family: Arial;
+            font-weight:bold;
+            font-size: 14;
+        }
+        
+        .notes {
+            font-size: 12;
+            font-weight:bold;
+            font-family: Arial;
+        }        
+        
+        .versionName {           
+            text-align:center;
+            width: 200px;
+        }
+        
+        .currentVer {           
+            color: yellow;
+            background-color: green;
+            text-align:center;
+            width: 180px;
+        }
+        
+        .envButton {            
+            text-align:center;
+            width: 180px;
+        }       
+        
+        #resultIFrame {
+            width: 900;
+            height: 2000;
+        }
+    </style>
+
+</head>
+<body>
+
+  <% 
+      List<BenchmarkRecord> records =  (List<BenchmarkRecord>) request.getAttribute("benchmarkRecords");
+      String title = (String) request.getAttribute("title");
+  %>
+  
+  <table class="block" border="1"> 
+      <caption class="appName">Benchmark Records for <%=title %></caption>	 
+
+      <tr class="headrow">
+          <th>ContainerId</th>
+          <th>Timestamp</th>
+          <th>Instance Type</th>
+          <th>Test Id</th>
+          <th>Result Viewer</th>
+      </tr>
+      
+      <% for(BenchmarkRecord record : records) { Date date = new Date(record.getTimestamp() * 1000); %>
+	  <tr class="datarow">
+	      <td class="cell-label"> <%= record.getContainerId() %> </td>	 	  
+	      <td class="cell-info"><%= record.getTimestamp() %> (<%= date.toGMTString() %>)</td>	  	                     
+          <td class="cell-info-short"><%= record.getInstanceType() %></td>                    
+          <td class="cell-info"><a href="/v1/roar/test/run/<%=record.getTestId() %>/checker"><%= record.getTestId() %></a></td>                                
+          <td class="cell-info-short"><a href="javascript:showResultPageInIFrame('/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>');">Open Viewer</a></td>  
+      </tr>
+      <% } %>
+  </table>
+  
+  <iframe id="resultIFrame" src="" frameborder="0" scrolling="no" >
+  </iframe>
+</body>
+</html>

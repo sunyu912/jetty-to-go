@@ -43,7 +43,7 @@ input[type=checkbox] {
 }
 
 #header h2 {
-	margin-left: 10px;
+	margin-left: 25px;
 	vertical-align: middle;
 	font-size: 22px;
 	font-weight: bold;
@@ -51,10 +51,19 @@ input[type=checkbox] {
 	color: #000;
 }
 
+#header h5 {
+    margin-left: 25px;
+    vertical-align: middle;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #000;
+}
+
 #content {
 	width: 880px;
 	margin: 0 auto;
-	padding: 10px;
+	padding: 0;
 }
 
 #footer {

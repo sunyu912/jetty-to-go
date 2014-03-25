@@ -1,9 +1,15 @@
 package io.magnum.jetty.server.data.provider;
 
+import java.util.List;
+
+import io.magnum.jetty.server.data.BenchmarkRecord;
 import io.magnum.jetty.server.data.TestInfo;
 
 import com.amazonaws.services.dynamodb.AmazonDynamoDB;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodb.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodb.datamodeling.DynamoDBScanExpression;
+import com.amazonaws.services.dynamodb.model.AttributeValue;
 
 /**
  * The default implementation for DataProvider based
@@ -54,5 +60,17 @@ public class DataProviderImpl implements DataProvider {
     @Override
     public TestInfo getTestInfo(String id) {        
         return dynamoDBMapper.load(TestInfo.class, id);
+    }
+
+    @Override
+    public List<BenchmarkRecord> listBenchmarkRecords(String id) {
+        if (id == null) {
+            DynamoDBScanExpression expression = new DynamoDBScanExpression();
+            return dynamoDBMapper.scan(BenchmarkRecord.class, expression);
+        } else {
+            AttributeValue attributeValue = new AttributeValue().withS(id);
+            DynamoDBQueryExpression expression = new DynamoDBQueryExpression(attributeValue); 
+            return dynamoDBMapper.query(BenchmarkRecord.class, expression);
+        }        
     }	
 }

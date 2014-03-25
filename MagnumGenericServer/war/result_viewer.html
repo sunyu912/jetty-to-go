@@ -3,7 +3,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Flot Examples: Basic Options</title>
+	<title>ROAR Viewer</title>
 	<link href="css/examples.css" rel="stylesheet" type="text/css">
 	<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../../excanvas.min.js"></script><![endif]-->
 	<script language="javascript" type="text/javascript" src="js/jquery.js"></script>
@@ -35,8 +35,13 @@
 
 	$(function () {		
 		var resultUrl = "https://s3.amazonaws.com/roar-tests/" + QueryString.testId + "/throughput-perm.json";
+		var instanceType = QueryString.type;
+		var app = QueryString.app;
+		if (instanceType != null && app != null) {
+		    $('#details').html('Container: ' + app + ' &nbsp;&nbsp; Instance Type: ' + instanceType);	
+		}
+		
 		$.getJSON(resultUrl , function( data ) {
-			console.log( " test: " + data);
 			var perfMap = data.perfMap;
 			var throughputMap = data.throughputMap;
 			var expectedThroughput = data.expectedTimeThroughputMap;
@@ -209,7 +214,8 @@
 <body>
 
 	<div id="header">
-		<h2>Magnum Load Testing Performance Viewer</h2>
+		<h2>ROAR Viewer</h2>
+		<h5 id="details"></h5>
 	</div>
 
 	<div id="content">
