@@ -117,7 +117,8 @@
           <th>Timestamp</th>
           <th>Instance Type</th>
           <th>Test Id</th>
-          <th>Result Viewer</th>
+          <th>Viewer</th>
+          <th>Notes</th>
       </tr>
       
       <% for(BenchmarkRecord record : records) { Date date = new Date(record.getTimestamp() * 1000); %>
@@ -126,12 +127,13 @@
 	      <td class="cell-info"><%= record.getTimestamp() %> (<%= date.toGMTString() %>)</td>	  	                     
           <td class="cell-info-short"><%= record.getInstanceType() %></td>                    
           <td class="cell-info"><a href="/v1/roar/test/run/<%=record.getTestId() %>/checker"><%= record.getTestId() %></a></td>                                
-          <td class="cell-info-short"><a href="javascript:showResultPageInIFrame('/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>');">Open Viewer</a></td>  
+          <td class="cell-info-short"><a href="javascript:showResultPageInIFrame('/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>');">Open Viewer</a></td>
+          <td class="cell-info"><%= record.getNotes() %></td>  
       </tr>
       <% } %>
   </table>
   
-  <iframe id="resultIFrame" src="" frameborder="0" scrolling="no" >
+  <iframe id="resultIFrame" src="" frameborder="0" scrolling="no">
   </iframe>
 </body>
 </html>

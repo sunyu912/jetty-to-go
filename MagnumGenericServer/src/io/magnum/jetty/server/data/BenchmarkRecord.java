@@ -11,6 +11,7 @@ public class BenchmarkRecord {
     private Long timestamp;
     private String instanceType;
     private String testId;
+    private String notes;
     
     @DynamoDBHashKey
     public String getContainerId() {
@@ -44,5 +45,16 @@ public class BenchmarkRecord {
     
     public void setTestId(String testId) {
         this.testId = testId;
+    }
+
+    public String getNotes() {
+        if (notes == null) {
+            return "";
+        }
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }
