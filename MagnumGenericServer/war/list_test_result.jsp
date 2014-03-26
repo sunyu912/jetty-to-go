@@ -57,7 +57,7 @@
 		font-family: Arial;
 		font-size: 12;
 		background-color: #EEE;
-		width: 300;
+		width: 250;
 		}
 		td.cell-info-short {
         font-family: Arial;
