@@ -12,9 +12,7 @@
     <script type="text/javascript">
 	    function showResultPageInIFrame(url) {
 	    	$('#resultIFrame').attr('src', url);	
-	    }
-	    
-	    
+	    }	    
     </script>
     <style type="text/css" media="all">@import "/css/thickbox.css";</style>
     <style type="text/css">
@@ -140,7 +138,5 @@
       <% } %>
   </table>
   
-  <iframe id="resultIFrame" src="" frameborder="0" scrolling="no">
-  </iframe>
 </body>
 </html>
