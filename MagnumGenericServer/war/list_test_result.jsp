@@ -7,12 +7,16 @@
 <head>
     <title>Magnum Test Result Checker</title>
     <script src="/js/jquery.js"></script>
+    <script src="/js/thickbox-compressed.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
     <script type="text/javascript">
 	    function showResultPageInIFrame(url) {
 	    	$('#resultIFrame').attr('src', url);	
-	    } 
+	    }
+	    
+	    
     </script>
+    <style type="text/css" media="all">@import "/css/thickbox.css";</style>
     <style type="text/css">
     
         table.block { 
@@ -107,7 +111,7 @@
   <% 
       List<BenchmarkRecord> records =  (List<BenchmarkRecord>) request.getAttribute("benchmarkRecords");
       String title = (String) request.getAttribute("title");
-  %>
+  %>  
   
   <table class="block" border="1"> 
       <caption class="appName">Benchmark Records for <%=title %></caption>	 
@@ -126,8 +130,11 @@
 	      <td class="cell-label"> <%= record.getContainerId() %> </td>	 	  
 	      <td class="cell-info"><%= record.getTimestamp() %> (<%= date.toGMTString() %>)</td>	  	                     
           <td class="cell-info-short"><%= record.getInstanceType() %></td>                    
-          <td class="cell-info"><a href="/v1/roar/test/run/<%=record.getTestId() %>/checker"><%= record.getTestId() %></a></td>                                
-          <td class="cell-info-short"><a href="javascript:showResultPageInIFrame('/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>');">Open Viewer</a></td>
+          <td class="cell-info"><a href="/v1/roar/test/run/<%=record.getTestId() %>/checker"><%= record.getTestId() %></a></td>
+          <%-- <td class="cell-info-short"><a href="javascript:showResultPageInIFrame('/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>');">Open Viewer</a></td> --%>
+          <td class="cell-info-short">
+            <a href="/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>&KeepThis=true&TB_iframe=true&height=800&width=900" title="ROAR" class="thickbox">Open Viewer</a>
+          </td>
           <td class="cell-info"><%= record.getNotes() %></td>  
       </tr>
       <% } %>
