@@ -4,6 +4,8 @@ import io.magnum.jetty.server.data.ScreenshotRecord;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -25,45 +27,73 @@ public class PhantomJSScreenshotManager implements ScreenshotManager {
     private AwsS3Helper s3Helper;
     
     @Override
-    public ScreenshotRecord getScreenshot(String url) {
+    public ScreenshotRecord getScreenshot(String inputUrl) {
         // normalize URL
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "http://" + url;
+        inputUrl = inputUrl.trim();
+        List<String> urlRetyList = new ArrayList<String>();
+        if (!inputUrl.startsWith("http://") && !inputUrl.startsWith("https://")) {            
+            urlRetyList.add("http://" + inputUrl);
+            if (!inputUrl.startsWith("www")) {
+                urlRetyList.add("http://www." + inputUrl);
+            }
+            urlRetyList.add("https://" + inputUrl);            
+        } else {
+            urlRetyList.add(inputUrl);
         }
-        
+                
         Long timestamp = System.currentTimeMillis();
+        
+        ScreenshotRecord record = new ScreenshotRecord();
+        record.setTimestamp(timestamp);
+        record.setUrl(urlRetyList.get(0));
+                
         File tmpImageFile = null;
         try {
             tmpImageFile = File.createTempFile(UUID.randomUUID().toString(), ".png");
         } catch (IOException e) {
             logger.error("Failed to create the tmp file for screenshot", e);
-            return null;
+            record.setSuccess(false);
+            return record;
         }
-        
-        // capture screenshot
-        //Exec exec = new Exec("/usr/local/bin/phantomjs /usr/local/Cellar/phantomjs/1.9.7/share/phantomjs/examples/rasterize.js "
-        Exec exec = new Exec("/home/ubuntu/phantomjs/bin/phantomjs /home/ubuntu/rasterize.js "
-                + url + " " + tmpImageFile.getAbsolutePath());
-        try {
-            logger.info("Capturing screenshot for url {}", url);
-            exec.execute();
+                
+        try {    
+            boolean isSuccess = false;
+            for(String url : urlRetyList) {
+                logger.info("Capturing screenshot for url {}", url);
+                // capture screenshot
+                Exec exec = new Exec("/usr/local/bin/phantomjs /usr/local/Cellar/phantomjs/1.9.7/share/phantomjs/examples/rasterize.js "
+                        + url + " " + tmpImageFile.getAbsolutePath());
+//                Exec exec = new Exec("/home/ubuntu/phantomjs/bin/phantomjs /home/ubuntu/rasterize.js "
+//                        + url + " " + tmpImageFile.getAbsolutePath());
+                
+                try {
+                    exec.execute();
+                } catch (Exception e) {
+                    logger.error("Failed to exec the screenshot command for url {}", url, e);        
+                }
+                
+                // check if it is success
+                if (tmpImageFile.length() != 0) {
+                    isSuccess = true;
+                    record.setUrl(url);
+                    record.setSuccess(true);
+                    logger.info("Capturing screenshot for url {} successfully", url);
+                    break;
+                }
+            }
             
-            logger.info("Uploading the file {} to S3", tmpImageFile.getAbsolutePath());
-            s3Helper.uploadFileToS3(tmpImageFile.getAbsolutePath(), IMAGE_BUCKET, tmpImageFile.getName(), true);
+            if (isSuccess) {
+                logger.info("Uploading the file {} to S3", tmpImageFile.getAbsolutePath());
+                s3Helper.uploadFileToS3(tmpImageFile.getAbsolutePath(), IMAGE_BUCKET, tmpImageFile.getName(), true);                
+                record.setImageS3Url(S3URL_PREFIX + "/" + IMAGE_BUCKET + "/" + tmpImageFile.getName());
+            }
             
             logger.info("Deleting the file {}", tmpImageFile.getAbsolutePath());
             tmpImageFile.delete();
-        } catch (IOException e) {
-            logger.error("Failed to exec the screenshot command for url {}", url, e);
         } catch (AbortException e) {
             logger.error("Failed to upload the screenshot file {} to S3 {} {}", 
                     tmpImageFile.getAbsolutePath(), IMAGE_BUCKET, tmpImageFile.getName(), e);
         }
-                
-        ScreenshotRecord record = new ScreenshotRecord();
-        record.setTimestamp(timestamp);
-        record.setUrl(url);
-        record.setImageS3Url(S3URL_PREFIX + "/" + IMAGE_BUCKET + "/" + tmpImageFile.getName());
         
         return record;
     }

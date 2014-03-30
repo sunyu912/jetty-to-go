@@ -10,6 +10,7 @@ public class ScreenshotRecord {
     private String url;
     private String imageS3Url;
     private Long timestamp;
+    private boolean isSuccess;
     
     @DynamoDBRangeKey
     public Long getTimestamp() {
@@ -35,5 +36,13 @@ public class ScreenshotRecord {
     
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public boolean isSuccess() {
+        return isSuccess;
+    }
+
+    public void setSuccess(boolean isSuccess) {
+        this.isSuccess = isSuccess;
     }   
 }
