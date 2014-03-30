@@ -128,8 +128,13 @@
 			// draw performance charts			
 			$.each( perfMap, function( host, perfTimeRecordMap ) {
 				var cpuData = [];
+				var cpuStolen = [];
+				var cpuIOWait = [];
+				var cpuNonIdle = [];
+				var cpuSIRQ = [];
 				var memoryData = [];
 				var networkData = [];
+				var networkEth0 = [];
 				var diskData = [];
 
 				var firstFlag = true;
@@ -140,13 +145,23 @@
 						firstFlag = false;
 					}
 					cpuData.push([(time - beginTimestamp) / 1000, perfRecord.cpu]);
+					cpuStolen.push([(time - beginTimestamp) / 1000, perfRecord.cpuSteal]);
+					cpuIOWait.push([(time - beginTimestamp) / 1000, perfRecord.cpuIOWait]);
+					cpuNonIdle.push([(time - beginTimestamp) / 1000, (100 - perfRecord.cpuIdle)]);
+					cpuSIRQ.push([(time - beginTimestamp) / 1000, perfRecord.cpuSoftirq]);
+
 					memoryData.push([(time - beginTimestamp) / 1000, perfRecord.memory]);
 					networkData.push([(time - beginTimestamp) / 1000, perfRecord.network]);
+					networkEth0.push([(time - beginTimestamp) / 1000, perfRecord.networkEth0]);
 					diskData.push([(time - beginTimestamp) / 1000, perfRecord.disk]);
 			    });
 
 			    $.plot("#cpu-memory-chart", [
-				{ label: "CPU", data: cpuData },
+				{ label: "CPU SyUsr", data: cpuData },
+				{ label: "CPU Stolen", data: cpuStolen },
+				{ label: "CPU NonIdle", data: cpuNonIdle },
+				{ label: "CPU SIRQ", data: cpuSIRQ },
+				{ label: "CPU IOWait", data: cpuIOWait },
 				{ label: "Memory", data: memoryData }
 				], {
 					legend: {
@@ -177,6 +192,7 @@
 
 				$.plot("#io-chart", [
 				{ label: "Network", data: networkData },
+				{ label: "Network Eth0", data: networkEth0 },
 				{ label: "Disk", data: diskData }
 				], {
 					legend: {
