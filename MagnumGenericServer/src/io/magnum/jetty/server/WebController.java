@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @Controller
@@ -42,6 +43,13 @@ public class WebController {
 	@RequestMapping(value = "ar/app/config", method = RequestMethod.GET)
     public void getConfigurations(HttpServletResponse response) throws Exception {
         response.getWriter().write(mapper.writeValueAsString(AppConfigLoader.getAppConfig()));        
+    }
+	
+	@RequestMapping(value = "test/prime", method = RequestMethod.GET)
+    public void getConfigurations(
+            @RequestParam("range") int range,
+            HttpServletResponse response) throws Exception {
+        response.getWriter().write(mapper.writeValueAsString(dataProvider.getPrimeNumbers(range)));        
     }
 	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)
