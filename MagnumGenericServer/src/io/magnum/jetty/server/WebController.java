@@ -1,5 +1,6 @@
 package io.magnum.jetty.server;
 
+import io.magnum.jetty.server.analyzer.VizwebAnalyzer;
 import io.magnum.jetty.server.data.ScreenshotRecord;
 import io.magnum.jetty.server.data.provider.DataProvider;
 import io.magnum.jetty.server.screenshot.ScreenshotManager;
@@ -34,6 +35,8 @@ public class WebController {
 	
 	@Autowired
 	private ScreenshotManager screenshotManager;
+	@Autowired
+	private VizwebAnalyzer vizwebAnalyzer;
 	
 	@Autowired
 	public WebController(DataProvider dataProvider) {
@@ -57,6 +60,11 @@ public class WebController {
         ModelAndView modelAndView = new ModelAndView("listScreenshots");
         modelAndView.addObject("records", records);        
         return modelAndView;
+    }
+	
+	@RequestMapping(value = "test", method = RequestMethod.GET)
+    public void justTest(HttpServletResponse response) throws Exception {
+	    vizwebAnalyzer.analyzeColorfullness("d18a0745-366d-43ba-a475-865e387abfaf2135283034243186746");        
     }
 	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)

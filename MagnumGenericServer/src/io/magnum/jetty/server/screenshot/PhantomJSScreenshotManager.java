@@ -1,6 +1,7 @@
 package io.magnum.jetty.server.screenshot;
 
 import io.magnum.jetty.server.data.ScreenshotRecord;
+import io.magnum.jetty.server.url.ResourceLocator;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,9 +21,6 @@ public class PhantomJSScreenshotManager implements ScreenshotManager {
     
     private static Logger logger = LoggerFactory.getLogger(PhantomJSScreenshotManager.class);
     
-    private static final String IMAGE_BUCKET = "yu-test";
-    private static final String S3URL_PREFIX = "https://s3.amazonaws.com";
-
     @Autowired
     private AwsS3Helper s3Helper;
     
@@ -84,15 +82,15 @@ public class PhantomJSScreenshotManager implements ScreenshotManager {
             
             if (isSuccess) {
                 logger.info("Uploading the file {} to S3", tmpImageFile.getAbsolutePath());
-                s3Helper.uploadFileToS3(tmpImageFile.getAbsolutePath(), IMAGE_BUCKET, tmpImageFile.getName(), true);                
-                record.setImageS3Url(S3URL_PREFIX + "/" + IMAGE_BUCKET + "/" + tmpImageFile.getName());
+                s3Helper.uploadFileToS3(tmpImageFile.getAbsolutePath(), ResourceLocator.IMAGE_BUCKET, tmpImageFile.getName(), true);                
+                record.setImageS3Url(ResourceLocator.S3URL_PREFIX + "/" + ResourceLocator.IMAGE_BUCKET + "/" + tmpImageFile.getName());
             }
             
             logger.info("Deleting the file {}", tmpImageFile.getAbsolutePath());
             tmpImageFile.delete();
         } catch (AbortException e) {
             logger.error("Failed to upload the screenshot file {} to S3 {} {}", 
-                    tmpImageFile.getAbsolutePath(), IMAGE_BUCKET, tmpImageFile.getName(), e);
+                    tmpImageFile.getAbsolutePath(), ResourceLocator.IMAGE_BUCKET, tmpImageFile.getName(), e);
         }
         
         return record;

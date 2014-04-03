@@ -61,6 +61,9 @@
 	<bean id="screenshotManager" class="io.magnum.jetty.server.screenshot.PhantomJSScreenshotManager">        
     </bean>
     
+	<bean id="vizwebAnalyzer" class="io.magnum.jetty.server.analyzer.VizwebAnalyzer">        
+    </bean>
+    
 	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
       <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
       <property name="prefix" value="/"/>
