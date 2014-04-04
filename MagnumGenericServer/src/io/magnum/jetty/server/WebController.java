@@ -1,7 +1,10 @@
 package io.magnum.jetty.server;
 
 import io.magnum.jetty.server.analyzer.VizwebAnalyzer;
+import io.magnum.jetty.server.data.ColorFeatureResult;
+import io.magnum.jetty.server.data.QuadtreeFeatureResult;
 import io.magnum.jetty.server.data.ScreenshotRecord;
+import io.magnum.jetty.server.data.XYFeatureResult;
 import io.magnum.jetty.server.data.provider.DataProvider;
 import io.magnum.jetty.server.screenshot.ScreenshotManager;
 
@@ -52,7 +55,7 @@ public class WebController {
 	    response.getWriter().write(mapper.writeValueAsString(record));
 	}
 	
-	@RequestMapping(value = "/list/screenshot", method = RequestMethod.GET)
+	@RequestMapping(value = "list/screenshot", method = RequestMethod.GET)
     public ModelAndView listScreenshots(
             @RequestParam(value="url", required=false) String url,
             HttpServletResponse response) throws Exception {	   
@@ -62,9 +65,28 @@ public class WebController {
         return modelAndView;
     }
 	
-	@RequestMapping(value = "test", method = RequestMethod.GET)
-    public void justTest(HttpServletResponse response) throws Exception {
-	    vizwebAnalyzer.analyzeColorfullness("d18a0745-366d-43ba-a475-865e387abfaf2135283034243186746");        
+	@RequestMapping(value = "analyze/color", method = RequestMethod.GET)
+    public void analyzerColor(
+            @RequestParam("id") String id,
+            HttpServletResponse response) throws Exception {	    
+	    ColorFeatureResult result = vizwebAnalyzer.computeColorFeature(id);
+	    response.getWriter().write(mapper.writeValueAsString(result));
+    }
+	
+	@RequestMapping(value = "analyze/xy", method = RequestMethod.GET)
+    public void analyzerXYFeature(
+            @RequestParam("id") String id,
+            HttpServletResponse response) throws Exception {       
+        XYFeatureResult result = vizwebAnalyzer.computerXYFeature(id);
+        response.getWriter().write(mapper.writeValueAsString(result));
+    }
+	
+	@RequestMapping(value = "analyze/quadtree", method = RequestMethod.GET)
+    public void analyzerQuadtree(
+            @RequestParam("id") String id,
+            HttpServletResponse response) throws Exception {
+        QuadtreeFeatureResult result = vizwebAnalyzer.computerQuadtreeFeature(id);
+        response.getWriter().write(mapper.writeValueAsString(result));
     }
 	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)

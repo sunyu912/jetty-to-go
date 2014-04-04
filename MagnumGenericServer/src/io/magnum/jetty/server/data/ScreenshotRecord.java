@@ -9,6 +9,7 @@ public class ScreenshotRecord {
 
     private String url;
     private String imageS3Url;
+    private String id;
     private Long timestamp;
     private boolean isSuccess;
     
@@ -44,5 +45,13 @@ public class ScreenshotRecord {
 
     public void setSuccess(boolean isSuccess) {
         this.isSuccess = isSuccess;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }   
 }

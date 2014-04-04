@@ -46,23 +46,25 @@ public class PhantomJSScreenshotManager implements ScreenshotManager {
         record.setUrl(urlRetyList.get(0));
                 
         File tmpImageFile = null;
+        String id = UUID.randomUUID().toString();        
         try {
-            tmpImageFile = File.createTempFile(UUID.randomUUID().toString(), ".png");
+            tmpImageFile = File.createTempFile(id, ".png");
+            record.setId(tmpImageFile.getName().substring(0, tmpImageFile.getName().length() - 4));
         } catch (IOException e) {
             logger.error("Failed to create the tmp file for screenshot", e);
             record.setSuccess(false);
             return record;
         }
                 
-        try {    
+        try {
             boolean isSuccess = false;
             for(String url : urlRetyList) {
                 logger.info("Capturing screenshot for url {}", url);
                 // capture screenshot
-                Exec exec = new Exec("/usr/local/bin/phantomjs /usr/local/Cellar/phantomjs/1.9.7/share/phantomjs/examples/rasterize.js "
-                        + url + " " + tmpImageFile.getAbsolutePath());
-//                Exec exec = new Exec("/home/ubuntu/phantomjs/bin/phantomjs /home/ubuntu/rasterize.js "
+//                Exec exec = new Exec("/usr/local/bin/phantomjs /usr/local/Cellar/phantomjs/1.9.7/share/phantomjs/examples/rasterize.js "
 //                        + url + " " + tmpImageFile.getAbsolutePath());
+                Exec exec = new Exec("/home/ubuntu/phantomjs/bin/phantomjs /home/ubuntu/rasterize.js "
+                        + url + " " + tmpImageFile.getAbsolutePath());
                 
                 try {
                     exec.execute();

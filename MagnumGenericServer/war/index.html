@@ -121,6 +121,9 @@ resultSection {
 margin-top: 50;
 font-size: 10;
 }
+#resultImageUrl {
+    font-size: 12;
+}
 
 #processingImg {
     top: 77;
@@ -132,6 +135,9 @@ font-size: 10;
     display: block;
 }
 
+#analysisResult {
+    vertical-align:top;
+}
 </style>
 
 <script src="http://code.jquery.com/jquery-1.9.0.js"></script>
@@ -139,12 +145,21 @@ font-size: 10;
     
 <!--this is click result-->
 <script>
+    $(function() {
+    	$('#resTable').hide();	
+    });
+    
     function captureScreenshot() {
+    	$('#resTable').hide();
+   
     	var siteUrl = $('#siteurl').val();
     	var screenshotUrl = "/v1/bbds/screenshot";    
     	
     	$('#gobutton').attr('disabled', 'disabled');
     	$("#processingImg").attr("src", "./icons/processing.gif");
+    	$("#xyProcessingImg").attr("src", "./icons/processing.gif");
+    	$("#colorProcessingImg").attr("src", "./icons/processing.gif");
+    	$("#quadtreeProcessingImg").attr("src", "./icons/processing.gif");
     	$("#processingImg").attr("width", "24");
     	$("#processingImg").attr("height", "24");
         
@@ -156,6 +171,10 @@ font-size: 10;
                 	url : siteUrl
                 },
                 success : function(result) {
+                	$('#resTable').show();
+                	$('#colorResult').text('');
+                	$('#xyResult').text('');
+                	$('#quadtreeResult').text('');
                 	$('#gobutton').removeAttr("disabled");
                     $('#processingImg').removeAttr("src");
                     $('#processingImg').removeAttr("width");
@@ -166,7 +185,56 @@ font-size: 10;
                     $("#resultImageUrl").attr("href", resultData.imageS3Url);
                     $("#resultImageUrl").text(resultData.imageS3Url);
                     // update img
-                    $("#resultImageImg").attr("src", resultData.imageS3Url);                    
+                    $("#resultImageImg").attr("src", resultData.imageS3Url);  
+                    $("#resultImageImg").attr("width", 600);  
+                    
+                    if (resultData.success) {
+                    	$.ajax(
+                                {
+                                    type : "GET",
+                                    url  : "/v1/bbds/analyze/color",
+                                    data : {
+                                        id : resultData.id
+                                    },
+                                    success : function(result) {                   
+                                    	$('#colorProcessingImg').removeAttr("src");
+                                    	$('#colorResult').text(result);
+                                    },
+                                    error: function (jqXHR, exception) {
+                                    	$('#colorProcessingImg').removeAttr("src");
+                                    }
+                                });
+                    	$.ajax(
+                                {
+                                    type : "GET",
+                                    url  : "/v1/bbds/analyze/quadtree",
+                                    data : {
+                                        id : resultData.id
+                                    },
+                                    success : function(result) {
+                                    	$('#quadtreeProcessingImg').removeAttr("src");
+                                        $('#quadtreeResult').text(result);
+                                    },
+                                    error: function (jqXHR, exception) {
+                                    	$('#quadtreeProcessingImg').removeAttr("src");
+                                    }
+                                });
+                    	$.ajax(
+                                {
+                                    type : "GET",
+                                    url  : "/v1/bbds/analyze/xy",
+                                    data : {
+                                        id : resultData.id
+                                    },
+                                    success : function(result) {
+                                    	$('#xyProcessingImg').removeAttr("src");
+                                        $('#xyResult').text(result);
+                                    },
+                                    error: function (jqXHR, exception) {
+                                    	$('#xyProcessingImg').removeAttr("src");
+                                    }
+                                });
+                    }
                 },
                 error: function (jqXHR, exception) {
                     alert("Failed to capture the screenshot.");
@@ -177,7 +245,7 @@ font-size: 10;
                     $('#processingImg').removeAttr("height");
                 }
             });
-    }    
+    }
 </script>
     
 <title>BBDS Website Screenshot Camera</title>
@@ -193,19 +261,33 @@ font-size: 10;
     <input id="gobutton" type="submit" value="Go" onclick="captureScreenshot()">
     <img id="processingImg" align="bottom" src="" ></img>
     <br>
-    <div>
-        Color1 <input type="checkbox" name="color1" value="color1">
-        Color2 <input type="checkbox" name="color2" value="color2">
-        Leave Count <input type="checkbox" name="leave" value="color1">
-        Test Group Count <input type="checkbox" name="group" value="color1">
-        Hori-Balance <input type="checkbox" name="h-balance" value="color1">
-        Hori-Symmetry <input type="checkbox" name="h-symmetry" value="color1">
-        <input id="gobutton" type="submit" value="Go" onclick="captureScreenshot()">
-    </div>
-    <div class="resultSection">
-	    <a id="resultImageUrl" class="urltext" href=""></a>
-	    <img id="resultImageImg" class="pImg" src=""></img>    	 
-    </div>
+    
+    <table id="resTable" class="block" border="1">
+	    <tr class="headrow">
+	          <th>Screenshot</th>
+	          <th>Analysis</th>
+	    </tr>
+        <tr>
+            <td>
+			    <div class="resultSection">
+				    <a id="resultImageUrl" target="_blank" class="urltext" href=""></a>
+				    <img id="resultImageImg" class="pImg" src=""></img>    	 
+			    </div>
+		    </td>
+		    <td id="analysisResult">
+			    <div class="resultSection">
+			        <h5><u>Color Feature Result</u></h5>
+			        <img id="colorProcessingImg" align="bottom" src="./icons/processing.gif" ></img><h5 id="colorResult"></h5>
+			        
+			        <h5><u>XY Feature Result (Time-Consuming)</u></h5>
+			        <img id="xyProcessingImg" align="bottom" src="./icons/processing.gif" ></img><h5 id="xyResult"></h5>
+			        
+			        <h5><u>Duadtree Feature Result</u></h5>
+			        <img id="quadtreeProcessingImg" align="bottom" src="./icons/processing.gif" ></img><h5 id="quadtreeResult"></h5>
+			    </div>
+		    </td>		    
+        </tr>
+    </table>
     
 </body>
 </html>
