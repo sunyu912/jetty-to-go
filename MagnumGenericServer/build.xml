@@ -22,7 +22,7 @@
 	<target name="compile">		
 		<javac   destdir="${project.dir}/bin"
 		         debug="on"
-		         source="1.6">
+		         source="1.7">
 			<src path="${project.dir}/src"/>
 			
 			<classpath>
@@ -72,6 +72,11 @@
 	      <include name="jetty-*.jar"/>
 	      <include name="servlet-api-*.jar"/>
 	      <include name="commons-io-*.jar"/>
+	      <include name="java*.jar"/>
+	      <include name="guava-*.jar"/>
+	      <include name="vizweb-*.jar"/>
+	      <include name="sik*.jar"/>
+	      <include name="picc*.jar"/>
 	    </fileset>
 	    <patternset><!-- to exclude some of the stuff we don't really need -->
 	      <exclude name="META-INF/**/*"/>
@@ -99,7 +104,7 @@
 	    </manifest>
 	  </war>
 
-	  <delete dir="${staging.dir}"/>
+	  <!-- <delete dir="${staging.dir}"/> -->
 	</target>
 	
 	<target name="copy-for-servers" depends="war">
