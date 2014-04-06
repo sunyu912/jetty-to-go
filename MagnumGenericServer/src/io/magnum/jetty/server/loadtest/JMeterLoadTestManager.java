@@ -135,6 +135,10 @@ public class JMeterLoadTestManager implements LoadTestManager {
                 exec.execute();
                 // sync files to s3                
                 s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
+                
+                // post processing 
+                postProcessingData(testId);
+                
                 // update test status
                 dataProvider.updateTestInfo(testId, TestInfo.COMPLETED);
             } catch (ExecuteException e) {
