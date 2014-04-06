@@ -6,4 +6,5 @@ public interface LoadTestManager {
 
     public String runTest(String testId, InputStream testPlanInput);
     
+    public void postProcessingData(String testId);
 }

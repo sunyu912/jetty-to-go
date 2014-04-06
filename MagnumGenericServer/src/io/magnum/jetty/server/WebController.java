@@ -59,6 +59,14 @@ public class WebController {
         response.getWriter().write(mapper.writeValueAsString(dataProvider.getTestInfo(testId)));
     }
 	
+	@RequestMapping(value = "test/run/process/{testId}", method = RequestMethod.GET)
+    public void getTestProcessedRunResult(
+            @PathVariable("testId") String testId,
+            HttpServletResponse response) throws Exception {
+	    loadTestManager.postProcessingData(testId);
+        response.getWriter().write(mapper.writeValueAsString(dataProvider.getTestInfo(testId)));
+    }
+	
 	@RequestMapping(value = "test/run/{testId}/checker", method = RequestMethod.GET)
     public ModelAndView getTestRunChecker(
             @PathVariable("testId") String testId,
