@@ -16,7 +16,7 @@ public class EmbeddedJettyServer {
 
 	public static void main(String[] args) {
     	// setup server port
-	    int port = Integer.parseInt(System.getProperty("port", "8080"));
+	    int port = Integer.parseInt(System.getProperty("port", "8090"));
         Server server = new Server(port);
 
         ProtectionDomain domain = EmbeddedJettyServer.class.getProtectionDomain();

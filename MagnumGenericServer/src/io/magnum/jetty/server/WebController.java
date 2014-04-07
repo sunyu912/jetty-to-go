@@ -4,6 +4,12 @@ import io.magnum.jetty.server.data.AppConfigLoader;
 import io.magnum.jetty.server.data.TrendingSites;
 import io.magnum.jetty.server.data.provider.DataProvider;
 
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -46,10 +52,43 @@ public class WebController {
     }
 	
 	@RequestMapping(value = "test/prime", method = RequestMethod.GET)
-    public void getConfigurations(
+    public void getPrime(
             @RequestParam("range") int range,
             HttpServletResponse response) throws Exception {
         response.getWriter().write(mapper.writeValueAsString(dataProvider.getPrimeNumbers(range)));        
+    }
+	
+	@RequestMapping(value = "test/largefile", method = RequestMethod.GET)
+    public void getLargeFile(
+            HttpServletResponse response) throws Exception {
+	    File file = new File("/tmp/largefile.dat");
+        int length   = 0;
+        ServletOutputStream outStream = response.getOutputStream();
+//        ServletContext context  = getServletConfig().getServletContext();
+//        String mimetype = context.getMimeType(filePath);
+        
+        // sets response content type
+//        if (mimetype == null) {
+          String mimetype = "application/octet-stream";
+//        }
+        response.setContentType(mimetype);
+        response.setContentLength((int)file.length());
+        String fileName = (new File("/tmp/largefile.dat")).getName();
+        
+        // sets HTTP header
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+        
+        byte[] byteBuffer = new byte[4096];
+        DataInputStream in = new DataInputStream(new FileInputStream(file));
+        
+        // reads the file's bytes and writes them to the response stream
+        while ((in != null) && ((length = in.read(byteBuffer)) != -1))
+        {
+            outStream.write(byteBuffer,0,length);
+        }
+        
+        in.close();
+        outStream.close();        
     }
 	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)
