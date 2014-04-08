@@ -1,20 +1,29 @@
 package io.magnum.jetty.server.data.analysis;
 
+import io.magnum.jetty.server.data.CleanedThroughputRecord;
 import io.magnum.jetty.server.data.shared.GlobalDataCollectorJsonWrapper;
 import io.magnum.jetty.server.data.shared.HostPerfRecordTimeMap;
 import io.magnum.jetty.server.data.shared.PerfRecord;
 import io.magnum.jetty.server.data.shared.ThroughputRecord;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class TestDataPostProcesser {
 
     private GlobalDataCollectorJsonWrapper data;
+    private Set<CleanedThroughputRecord> cleanedList;
     
     public TestDataPostProcesser(GlobalDataCollectorJsonWrapper data) {
         this.setData(data);     
+        this.cleanedList = new LinkedHashSet<CleanedThroughputRecord>();
         captureValidPoints();
+    }
+    
+    public Set<CleanedThroughputRecord> getCleanedList() {
+        return cleanedList;
     }
         
     public void captureValidPoints() {
@@ -32,6 +41,8 @@ public class TestDataPostProcesser {
         Collection<ThroughputRecord> records = getData().getThroughputMap().values();
         
         for(int i = 0; i < steps; i++) {
+            CleanedThroughputRecord cleanedRecord = new CleanedThroughputRecord();
+            
             int end = start + 5 + stepRate;
             int actualStart = start + 5 + stepRate / 2;
             
@@ -66,6 +77,9 @@ public class TestDataPostProcesser {
                 avgPoint.setErrorCount(errorSum / count);
                 
                 getData().getCapturedThroughputPoints().put(startTime, avgPoint);
+                // cleaned record
+                cleanedRecord.setThroughput(avgPoint.getCount());
+                cleanedRecord.setLatency(avgPoint.getMean());
             }
             
             // perf data
@@ -112,6 +126,14 @@ public class TestDataPostProcesser {
                     }
                     perfMap.put(recordTimestamp, rr);
                     getData().getCapturedPerfPoints().put(entry.getKey(), perfMap);
+                    
+                    // cleaned record
+                    cleanedRecord.setCpu(rr.getCpu());
+                    cleanedRecord.setMem(rr.getMemory());
+                    cleanedRecord.setNetwork(rr.getNetworkEth0());
+                    cleanedRecord.setDisk(rr.getDisk());
+                    
+                    this.cleanedList.add(cleanedRecord);
                 }
             }
             

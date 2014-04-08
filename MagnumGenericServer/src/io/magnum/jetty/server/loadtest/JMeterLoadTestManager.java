@@ -1,5 +1,6 @@
 package io.magnum.jetty.server.loadtest;
 
+import io.magnum.jetty.server.data.AppPerformanceRecord;
 import io.magnum.jetty.server.data.TestInfo;
 import io.magnum.jetty.server.data.analysis.TestDataPostProcesser;
 import io.magnum.jetty.server.data.provider.DataProvider;
@@ -56,7 +57,7 @@ public class JMeterLoadTestManager implements LoadTestManager {
     }
     
     @Override
-    public String runTest(String testId, InputStream in) {
+    public String runTest(String testId, InputStream in, String containerId, String instanceType) {
         // create test ID
         if (testId == null) {
             testId = UUID.randomUUID().toString();
@@ -76,17 +77,17 @@ public class JMeterLoadTestManager implements LoadTestManager {
             in.close();
         } catch (IOException e) {
             logger.error("Failed to save the input test spec file at {}", file.getAbsolutePath(), e);
-        }             
+        }
         
         dataProvider.updateTestInfo(testId, TestInfo.PROCESSING);
         // execute
-        executor.submit(new JMeterTestExecution(testId, testFolder, file.getAbsolutePath()));
+        executor.submit(new JMeterTestExecution(testId, testFolder, file.getAbsolutePath(), containerId, instanceType));
         
         return testId;
     }
     
     @Override
-    public void postProcessingData(String testId) {
+    public void postProcessingData(String testId, String containerId, String instanceType) {
         try {
             URL url = new URL("https://s3.amazonaws.com/roar-tests/" + testId + "/throughput-perm.json");
             GlobalDataCollectorJsonWrapper data = mapper.readValue(url, GlobalDataCollectorJsonWrapper.class);
@@ -99,6 +100,14 @@ public class JMeterLoadTestManager implements LoadTestManager {
             mapper.writeValue(file, processor.getData());
             // sync back
             s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
+            // save record in Dynamo
+            if (containerId != null && instanceType != null) {
+                AppPerformanceRecord record = new AppPerformanceRecord();
+                record.setContainerId(containerId);
+                record.setInstanceType(instanceType);
+                record.setThroughputList(processor.getCleanedList());
+                dataProvider.updateGeneric(record);
+            }
         } catch (IOException e) {
             logger.error("Failed to load the json file", e);
         } catch (AbortException e) {
@@ -114,11 +123,15 @@ public class JMeterLoadTestManager implements LoadTestManager {
         private String testId;
         private String testFolder;
         private String inputFile;
+        private String containerId;
+        private String instanceType;
         
-        JMeterTestExecution(String testId, String testFolder, String testFile) {
+        JMeterTestExecution(String testId, String testFolder, String testFile, String containerId, String instanceType) {
             this.testId = testId;
             this.testFolder = testFolder;
             this.inputFile = testFile;
+            this.containerId = containerId;
+            this.instanceType = instanceType;
         }
         
         @Override
@@ -137,7 +150,7 @@ public class JMeterLoadTestManager implements LoadTestManager {
                 s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
                 
                 // post processing 
-                postProcessingData(testId);
+                postProcessingData(testId, containerId, instanceType);
                 
                 // update test status
                 dataProvider.updateTestInfo(testId, TestInfo.COMPLETED);

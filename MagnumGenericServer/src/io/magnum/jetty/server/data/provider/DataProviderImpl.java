@@ -1,9 +1,10 @@
 package io.magnum.jetty.server.data.provider;
 
-import java.util.List;
-
+import io.magnum.jetty.server.data.AppPerformanceRecord;
 import io.magnum.jetty.server.data.BenchmarkRecord;
 import io.magnum.jetty.server.data.TestInfo;
+
+import java.util.List;
 
 import com.amazonaws.services.dynamodb.AmazonDynamoDB;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBMapper;
@@ -21,26 +22,26 @@ import com.amazonaws.services.dynamodb.model.AttributeValue;
  * @author Yu Sun
  */
 public class DataProviderImpl implements DataProvider {
-	
-	/**
-	 * DynamoDB Client
-	 * 
-	 * This client is currently only used to instantiate 
-	 * the object mapper. However, we keep it here just in
-	 * case it will be used in some other scenarios related
-	 * with DynamoDB. 
-	 */
-	@SuppressWarnings("unused")
-	private AmazonDynamoDB dynamoDBClient;
-	
-	/** DynamoDB Object Mapper */
+
+    /**
+     * DynamoDB Client
+     * 
+     * This client is currently only used to instantiate 
+     * the object mapper. However, we keep it here just in
+     * case it will be used in some other scenarios related
+     * with DynamoDB. 
+     */
+    @SuppressWarnings("unused")
+    private AmazonDynamoDB dynamoDBClient;
+
+    /** DynamoDB Object Mapper */
     private DynamoDBMapper dynamoDBMapper;
-	
-	
-	public DataProviderImpl(AmazonDynamoDB dynamoDBClient) {
-		this.dynamoDBClient = dynamoDBClient;
-		this.dynamoDBMapper = new DynamoDBMapper(dynamoDBClient);
-	}
+
+
+    public DataProviderImpl(AmazonDynamoDB dynamoDBClient) {
+        this.dynamoDBClient = dynamoDBClient;
+        this.dynamoDBMapper = new DynamoDBMapper(dynamoDBClient);
+    }
 
     @Override
     public TestInfo updateTestInfo(String id, String status) {
@@ -72,5 +73,17 @@ public class DataProviderImpl implements DataProvider {
             DynamoDBQueryExpression expression = new DynamoDBQueryExpression(attributeValue); 
             return dynamoDBMapper.query(BenchmarkRecord.class, expression);
         }        
+    }
+
+    @Override
+    public void updateGeneric(Object obj) {
+        dynamoDBMapper.save(obj);
+    }
+
+    @Override
+    public List<AppPerformanceRecord> listAppPerformanceRecord(String containerId) {
+        AttributeValue attributeValue = new AttributeValue().withS(containerId);
+        DynamoDBQueryExpression expression = new DynamoDBQueryExpression(attributeValue); 
+        return dynamoDBMapper.query(AppPerformanceRecord.class, expression);        
     }	
 }

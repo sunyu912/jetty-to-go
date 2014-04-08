@@ -1,8 +1,15 @@
 package io.magnum.jetty.server;
 
+import io.magnum.jetty.server.data.AppPerformanceRecord;
+import io.magnum.jetty.server.data.ApplicationCandidate;
+import io.magnum.jetty.server.data.ResourceAllocation;
 import io.magnum.jetty.server.data.RunTestResponse;
+import io.magnum.jetty.server.data.analysis.CostAnalyzer;
 import io.magnum.jetty.server.data.provider.DataProvider;
 import io.magnum.jetty.server.loadtest.LoadTestManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,63 +28,136 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class WebController {	
-	
-	/**
+
+    /**
      * Jackson JSON mapper. This might be more convenient to use then
      * SimpleJson.
      */
     private static final ObjectMapper mapper = new ObjectMapper() {{
-            configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }};
-    
-	/** Provider to access and manage all data */	
+
+    /** Provider to access and manage all data */	
     @Autowired
     private DataProvider dataProvider;
-	
-	@Autowired
-	private LoadTestManager loadTestManager;
-	
-	@Autowired
-	public WebController(DataProvider dataProvider) {
-		this.dataProvider = dataProvider;
-	}
-	
-	@RequestMapping(value = "test/run", method = RequestMethod.POST)
+
+    @Autowired
+    private LoadTestManager loadTestManager;
+    @Autowired
+    private CostAnalyzer costAnalyzer;
+
+    @Autowired
+    public WebController(DataProvider dataProvider) {
+        this.dataProvider = dataProvider;
+    }
+
+    @RequestMapping(value = "test/run", method = RequestMethod.POST)
     public void runTest(
             @RequestParam(value="testId", required=false) String testId,
+            @RequestParam(value="containerId", required=false) String containerId,
+            @RequestParam(value="instanceType", required=false) String instanceType,
             @RequestParam("testPlan") MultipartFile imagefile,
             HttpServletResponse response) throws Exception {
-        
-        String id = loadTestManager.runTest(testId, imagefile.getInputStream());
+
+        String id = loadTestManager.runTest(testId, imagefile.getInputStream(), containerId, instanceType);
         response.getWriter().write(mapper.writeValueAsString(new RunTestResponse(id)));
     }
-	
-	@RequestMapping(value = "test/run/{testId}", method = RequestMethod.GET)
+
+    @RequestMapping(value = "test/run/{testId}", method = RequestMethod.GET)
     public void getTestRunResult(
             @PathVariable("testId") String testId,
             HttpServletResponse response) throws Exception {	    
         response.getWriter().write(mapper.writeValueAsString(dataProvider.getTestInfo(testId)));
     }
-	
-	@RequestMapping(value = "test/run/process/{testId}", method = RequestMethod.GET)
+
+    @RequestMapping(value = "test/run/process/{testId}", method = RequestMethod.GET)
     public void getTestProcessedRunResult(
             @PathVariable("testId") String testId,
+            @RequestParam(value="containerId", required=false) String containerId,
+            @RequestParam(value="instanceType", required=false) String instanceType,
             HttpServletResponse response) throws Exception {
-	    loadTestManager.postProcessingData(testId);
+        loadTestManager.postProcessingData(testId, containerId, instanceType);
         response.getWriter().write(mapper.writeValueAsString(dataProvider.getTestInfo(testId)));
     }
-	
-	@RequestMapping(value = "test/run/{testId}/checker", method = RequestMethod.GET)
+
+    @RequestMapping(value = "test/cost", method = RequestMethod.GET)
+    public void getCostResult(
+            @RequestParam("containerId") String containerId,
+            @RequestParam(value="throughput", required=false) Integer throughput,
+            @RequestParam(value="latency", required=false) Double latency,
+            HttpServletResponse response) throws Exception {
+
+        response.getWriter().write(mapper.writeValueAsString(costAnalyzer.listCost(containerId, throughput, latency)));
+    }
+
+    @RequestMapping(value = "test/cost/solution", method = RequestMethod.GET)
+    public void getCostSolution(
+            @RequestParam("containerId") String containerId,
+            @RequestParam(value="throughput", required=false) Integer throughput,
+            @RequestParam(value="latency", required=false) Double latency,
+            HttpServletResponse response) throws Exception {
+
+        response.getWriter().write(mapper.writeValueAsString(costAnalyzer.getFinalSolution(containerId, throughput, latency)));
+    }
+
+    @RequestMapping(value = "test/run/{testId}/checker", method = RequestMethod.GET)
     public ModelAndView getTestRunChecker(
             @PathVariable("testId") String testId,
             HttpServletRequest request,
             HttpServletResponse response) throws Exception {	    	    
-	    ModelAndView modelAndView = new ModelAndView("test_result");
+        ModelAndView modelAndView = new ModelAndView("test_result");
         modelAndView.addObject("testInfo", dataProvider.getTestInfo(testId));                
         return modelAndView;        
     }
-	
-	@RequestMapping(value = "test/run/list", method = RequestMethod.GET)
+
+    @RequestMapping(value = "cost/solution", method = RequestMethod.GET)
+    public ModelAndView getSolutionCal(
+            @RequestParam("containerId") String containerId,
+            @RequestParam(value="throughput", required=false) Integer throughput,
+            @RequestParam(value="latency", required=false) Double latency,            
+            HttpServletResponse response) throws Exception {                
+        ModelAndView modelAndView = new ModelAndView("solution_cal");
+
+        List<AppPerformanceRecord> records = costAnalyzer.listCost(containerId, throughput, latency);
+        ResourceAllocation resourceAllocation = costAnalyzer.getFinalSolution(containerId, throughput, latency);
+
+        modelAndView.addObject("throughput", throughput);
+        modelAndView.addObject("latency", latency);
+        modelAndView.addObject("peakResultList", records);
+        modelAndView.addObject("solution", resourceAllocation);
+        return modelAndView;
+    }
+
+    @RequestMapping(value = "packing/solution", method = RequestMethod.GET)
+    public ModelAndView getPackingSolution(
+            @RequestParam("containerId") String containerId,
+            @RequestParam(value="throughput", required=false) Integer throughput,
+            @RequestParam(value="latency", required=false) Double latency,            
+            HttpServletResponse response) throws Exception {  
+        
+        List<ApplicationCandidate> candidates = new ArrayList<ApplicationCandidate>();
+        ApplicationCandidate a1 = new ApplicationCandidate();
+        a1.setContainerId("sunyu912/bm-7-netty");
+        a1.setTargetThroughput(50000);
+        a1.setTargetLatency(100.0);
+
+        ApplicationCandidate a2 = new ApplicationCandidate();
+        a2.setContainerId("sunyu912/bm-2-go");
+        a2.setTargetThroughput(60000);
+        a2.setTargetLatency(100.0);
+        
+        candidates.add(a1);
+        candidates.add(a2);
+                
+        ModelAndView modelAndView = new ModelAndView("solution_viewer");
+        modelAndView.addObject("throughput", throughput);
+        modelAndView.addObject("latency", latency);
+        //modelAndView.addObject("peakResultList", records);
+        modelAndView.addObject("solution", costAnalyzer.applicationsBinPacking(candidates));
+        return modelAndView;
+    }
+
+    @RequestMapping(value = "test/run/list", method = RequestMethod.GET)
     public ModelAndView getAllTestRunChecker(
             @RequestParam(value="id", required=false) String id,
             HttpServletRequest request,
@@ -87,10 +167,10 @@ public class WebController {
         modelAndView.addObject("title", id == null ? "All" : id);
         return modelAndView;
     }
-	
-	@RequestMapping(value = "ping", method = RequestMethod.GET)
-	public void healthCheck(HttpServletResponse response) throws Exception {	
-	    response.setStatus(200);
-		response.getWriter().write("success");
-	}
+
+    @RequestMapping(value = "ping", method = RequestMethod.GET)
+    public void healthCheck(HttpServletResponse response) throws Exception {	
+        response.setStatus(200);
+        response.getWriter().write("success");
+    }
 }
