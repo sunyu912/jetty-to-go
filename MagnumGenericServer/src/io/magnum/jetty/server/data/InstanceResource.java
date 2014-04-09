@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InstanceResource {
-
+    
     public static double CPU_LIMIT = 0.95; // 95% 
     public static double MEM_LIMIT = 0.95; // 95% 
     
     private String instanceType;
+    private String id;
     private List<ApplicationAllocation> allocatedApplications = new ArrayList<ApplicationAllocation>();
     
     public String getInstanceType() {
@@ -73,5 +74,13 @@ public class InstanceResource {
     
     public boolean hasRemaining() {
         return getTotalCpu() <= CPU_LIMIT && getTotalMem() <= MEM_LIMIT;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

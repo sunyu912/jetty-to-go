@@ -4,7 +4,9 @@ import io.magnum.jetty.server.data.AppPerformanceRecord;
 import io.magnum.jetty.server.data.BenchmarkRecord;
 import io.magnum.jetty.server.data.TestInfo;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.amazonaws.services.dynamodb.AmazonDynamoDB;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBMapper;
@@ -85,5 +87,22 @@ public class DataProviderImpl implements DataProvider {
         AttributeValue attributeValue = new AttributeValue().withS(containerId);
         DynamoDBQueryExpression expression = new DynamoDBQueryExpression(attributeValue); 
         return dynamoDBMapper.query(AppPerformanceRecord.class, expression);        
-    }	
+    }
+
+    @Override
+    public Map<String, Integer> getAvailableApps() {
+        Map<String, Integer> res = new HashMap<String, Integer>();
+        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+        List<AppPerformanceRecord> records = dynamoDBMapper.scan(AppPerformanceRecord.class, scanExpression);
+        for(AppPerformanceRecord r : records) {
+            String name = r.getContainerId();
+            Integer count = res.get(name);
+            if (count == null) {
+                res.put(name, 1);
+            } else {
+                res.put(name, count + 1);
+            }
+        }
+        return res;
+    }
 }

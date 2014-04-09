@@ -130,28 +130,20 @@ public class WebController {
 
     @RequestMapping(value = "packing/solution", method = RequestMethod.GET)
     public ModelAndView getPackingSolution(
-            @RequestParam("containerId") String containerId,
-            @RequestParam(value="throughput", required=false) Integer throughput,
-            @RequestParam(value="latency", required=false) Double latency,            
+            @RequestParam("candidate") String[] candidateStrs,
             HttpServletResponse response) throws Exception {  
-        
-        List<ApplicationCandidate> candidates = new ArrayList<ApplicationCandidate>();
-        ApplicationCandidate a1 = new ApplicationCandidate();
-        a1.setContainerId("sunyu912/bm-7-netty");
-        a1.setTargetThroughput(50000);
-        a1.setTargetLatency(100.0);
-
-        ApplicationCandidate a2 = new ApplicationCandidate();
-        a2.setContainerId("sunyu912/bm-2-go");
-        a2.setTargetThroughput(60000);
-        a2.setTargetLatency(100.0);
-        
-        candidates.add(a1);
-        candidates.add(a2);
                 
+        List<ApplicationCandidate> candidates = new ArrayList<ApplicationCandidate>();
+        for(String candidateStr : candidateStrs) {
+            String[] args = candidateStr.split("@");
+            ApplicationCandidate a1 = new ApplicationCandidate();
+            a1.setContainerId(args[0]);
+            a1.setTargetThroughput(Integer.parseInt(args[1]));
+            a1.setTargetLatency(Double.parseDouble(args[2]));
+            candidates.add(a1);
+        }
+        
         ModelAndView modelAndView = new ModelAndView("solution_viewer");
-        modelAndView.addObject("throughput", throughput);
-        modelAndView.addObject("latency", latency);
         //modelAndView.addObject("peakResultList", records);
         modelAndView.addObject("solution", costAnalyzer.applicationsBinPacking(candidates));
         return modelAndView;
@@ -165,6 +157,13 @@ public class WebController {
         ModelAndView modelAndView = new ModelAndView("list_test_result");
         modelAndView.addObject("benchmarkRecords", dataProvider.listBenchmarkRecords(id));
         modelAndView.addObject("title", id == null ? "All" : id);
+        return modelAndView;
+    }
+    
+    @RequestMapping(value = "optimizer", method = RequestMethod.GET)
+    public ModelAndView getSolutionOptimizer(HttpServletResponse response) throws Exception {                
+        ModelAndView modelAndView = new ModelAndView("optimizer");
+        modelAndView.addObject("apps", dataProvider.getAvailableApps());
         return modelAndView;
     }
 

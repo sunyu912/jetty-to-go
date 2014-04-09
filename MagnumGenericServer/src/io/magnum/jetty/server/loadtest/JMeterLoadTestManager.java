@@ -101,6 +101,7 @@ public class JMeterLoadTestManager implements LoadTestManager {
             // sync back
             s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
             // save record in Dynamo
+            logger.info("Updating database for {} / {}", containerId, instanceType);
             if (containerId != null && instanceType != null) {
                 AppPerformanceRecord record = new AppPerformanceRecord();
                 record.setContainerId(containerId);

@@ -58,5 +58,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/HD4ARAWSCommon"/>
 	<classpathentry kind="lib" path="libs/commons-io-1.4.jar"/>
 	<classpathentry kind="lib" path="libs/commons-fileupload-1.2.2.jar"/>
+	<classpathentry kind="lib" path="libs/guava-16.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

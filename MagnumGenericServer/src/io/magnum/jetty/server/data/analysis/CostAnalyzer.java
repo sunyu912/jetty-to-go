@@ -123,10 +123,13 @@ public class CostAnalyzer {
             return resourceAllocation;
         }
         Integer remainingThroughput = throughput;
+        int index = 0;
         while (remainingThroughput > 0) {
             List<AppPerformanceRecord> orderedList = listCost(containerId, remainingThroughput, latency);
             AppPerformanceRecord bestChoice = orderedList.get(0);
             InstanceResource instanceResource = new InstanceResource();
+            index++;
+            instanceResource.setId(Integer.toString(index));
             instanceResource.setInstanceType(bestChoice.getInstanceType());
             
             ApplicationAllocation applicationAllocation = new ApplicationAllocation();
@@ -177,6 +180,7 @@ public class CostAnalyzer {
             
             // OK, allocate one instance based on the biggest/most cost-effective instance chosen
             InstanceResource ir = new InstanceResource();
+            ir.setId(Integer.toString(index));
             // fill this instance resource before going to the next
             ApplicationAllocation aa = allocationApplication(firstCandidate);
             ir.getAllocatedApplications().add(aa);
@@ -185,7 +189,11 @@ public class CostAnalyzer {
             // fill the remaining 
             while (ir.hasRemaining()) {
                 ApplicationAllocation a = findRightApplicationForRemaining(ir, candidates);
-                ir.getAllocatedApplications().add(a);
+                if (a != null && a.isAllocated()) {
+                    ir.getAllocatedApplications().add(a);
+                } else {
+                    break;
+                }
             }
             
             resourceAllocation.getAllocatedResources().add(ir);
@@ -204,23 +212,31 @@ public class CostAnalyzer {
             InstanceResource ir, List<ApplicationCandidate> candidates) {        
         
         // 1. calculate the current total cost
+        logger.info("Step 1. Calculate the total cost");
         Map<String, Double> costMap = new HashMap<String, Double>();        
         for(ApplicationCandidate ac : candidates) {
+            if (ac.isDone()) continue;
             ResourceAllocation ra = 
                     getFinalSolution(ac.getContainerId(), ac.getRemainingThroughput(), ac.getTargetLatency());
             costMap.put(ac.getContainerId(), ra.getTotalCost());
+            logger.info("Current original cost for {} is {} ", ac.getContainerId(), ra.getTotalCost());
         }
         
         // 2. calculate the current remaining fit
+        logger.info("Step 2. Calculate the remaining fit");
         Map<String, ApplicationAllocation> remainingFit = new HashMap<String, ApplicationAllocation>();
         for(ApplicationCandidate ac : candidates) {
+            if (ac.isDone()) continue;
             ApplicationAllocation aa = predictThroughputBasedOnResource(ir, ac.getContainerId());
             remainingFit.put(ac.getContainerId(), aa);
+            logger.info("Remaining fit for {} is {}", ac.getContainerId(), aa.getAllocatedThroughput());
         }
         
         // 3. calculate the new total cost after the current remaining fit
         // 4. calculate the savings (1. - 3.)
+        logger.info("Step 3. Calculate the savings");
         for(ApplicationCandidate ac : candidates) {
+            if (ac.isDone()) continue;
             int savedThroughput = remainingFit.get(ac.getContainerId()).getAllocatedThroughput();
             ResourceAllocation ra = 
                     getFinalSolution(ac.getContainerId(), 
@@ -235,13 +251,16 @@ public class CostAnalyzer {
         costMap = sortByComparator(costMap);
         String chosenContainerId = null;
         for (Map.Entry<String, Double> entry : costMap.entrySet()) {
-            logger.info("List All Savings: " + entry.getKey() 
-                                   + " Savings: " + entry.getValue());
+            logger.info("Savings for {} is {}", entry.getKey(), entry.getValue());
             chosenContainerId = entry.getKey();
         }
         
         // 6. return the biggest savings
-        return remainingFit.get(chosenContainerId);               
+        if (chosenContainerId == null) {
+            return null;
+        } else {
+            return remainingFit.get(chosenContainerId);
+        }
     }
     
     private ApplicationAllocation predictThroughputBasedOnResource(InstanceResource ir, String containerId) {
@@ -355,6 +374,7 @@ public class CostAnalyzer {
         }
         return sortedMap;
     }
+    
     
     private class AppPerformanceRecordComparator implements Comparator<AppPerformanceRecord> {
         @Override

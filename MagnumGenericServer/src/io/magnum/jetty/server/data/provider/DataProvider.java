@@ -5,6 +5,7 @@ import io.magnum.jetty.server.data.BenchmarkRecord;
 import io.magnum.jetty.server.data.TestInfo;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface DataProvider {
@@ -18,4 +19,6 @@ public interface DataProvider {
     public List<AppPerformanceRecord> listAppPerformanceRecord(String containerId);
     
     public void updateGeneric(Object obj);
+    
+    public Map<String, Integer> getAvailableApps();
 }
