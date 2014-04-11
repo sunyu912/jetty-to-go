@@ -1,0 +1,102 @@
+table.block {
+	border-width: 3px;
+	border-style: solid;
+	border-collapse: collapse;
+	border-color: #A6CDDE;
+}
+
+table.error {
+	border-width: 3px;
+	border-style: solid;
+	border-collapse: collapse;
+	border-color: #F6358A;
+}
+
+tr.headrow {
+	font-family: Arial;
+	font-size: 14;
+	font-weight: bold;
+	background-color: #A6CDDE;
+	width: 650;
+}
+
+tr.error {
+	font-family: Arial;
+	font-size: 14;
+	font-weight: bold;
+	background-color: #F6358A;
+	width: 530;
+}
+
+tr.datarow {
+	border-width: 2px;
+	border-style: solid;
+	border-color: #FFFFFF;
+}
+
+td.cell-label {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12;
+	background-color: #EEE;
+	text-align: left;
+	width: 120;
+}
+
+td.cell-info {
+	font-family: Arial;
+	font-size: 12;
+	background-color: #EEE;
+	width: 100;
+}
+
+td.cell-info-short {
+    font-family: Arial;
+    font-size: 12;
+    background-color: #EEE;
+    width: 50;
+    text-align: center;
+}
+
+td.cell-info-container {
+    font-family: Arial;
+    font-size: 12;
+    background-color: #EEE;
+    width: 180;
+}
+
+.appName {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 14;
+	text-align: left;
+	text-decoration:underline;
+	padding-bottom: 3;
+}
+
+.notes {
+	font-size: 12;
+	font-weight: bold;
+	font-family: Arial;
+}
+
+.versionName {
+	text-align: center;
+	width: 200px;
+}
+
+.currentVer {
+	color: yellow;
+	background-color: green;
+	text-align: center;
+	width: 180px;
+}
+
+.envButton {
+	text-align: center;
+	width: 180px;
+}
+
+#appSelector {
+	width: 700;	
+}

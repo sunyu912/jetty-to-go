@@ -1,6 +1,8 @@
 package io.magnum.jetty.server.data.shared;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
@@ -35,6 +37,14 @@ public class HostPerfMap extends HashMap<String, HostPerfRecordTimeMap> {
 		} else {
 			// this should not happen			
 		}
+	}
+	
+	@JsonIgnore
+	public List<PerfRecord> getPerfList() {
+	    for(Map.Entry<String, HostPerfRecordTimeMap> r : this.entrySet()) {
+	        return r.getValue().getRecordList();
+	    }
+	    return null;
 	}
 	
 }

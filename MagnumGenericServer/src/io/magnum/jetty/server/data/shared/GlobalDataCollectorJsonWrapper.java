@@ -1,5 +1,12 @@
 package io.magnum.jetty.server.data.shared;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 
 public class GlobalDataCollectorJsonWrapper {
 
@@ -10,6 +17,7 @@ public class GlobalDataCollectorJsonWrapper {
 	private int duration;
 	private int steps;
 	private int targetThroughput;
+	private int peakThroughput;
 	
 	// processed fields
 	private TimeThroughputMap capturedThroughputPoints;
@@ -98,5 +106,92 @@ public class GlobalDataCollectorJsonWrapper {
 
     public void setCapturedPerfPoints(HostPerfMap capturedPerfPoints) {
         this.capturedPerfPoints = capturedPerfPoints;
+    }
+    
+    @JsonIgnore
+    public void outputCapturedData() {
+        List<ThroughputRecord> throughputList = capturedThroughputPoints.getRecordList();
+        List<PerfRecord> perfList = capturedPerfPoints.getPerfList();
+        
+        assert(throughputList.size() == perfList.size());
+        
+        File cpuInput = new File("/Users/yusun/Desktop/cpu.arff");
+        try {
+            FileWriter writer = new FileWriter(cpuInput);
+            writer.write("@relation 'throughput'");
+            writer.write("\n");
+            writer.write("@attribute CPU numeric");
+            writer.write("\n");
+//            writer.write("@attribute CPU2 numeric");
+//            writer.write("\n");
+//            writer.write("@attribute CPU3 numeric");
+//            writer.write("\n");
+            writer.write("@attribute throughput numeric");
+            writer.write("\n");
+            writer.write("@data");
+            writer.write("\n");
+            
+            for(int i = 0; i < perfList.size(); i++) {
+                double cpu = perfList.get(i).getCpu();
+                double cpu2 = cpu * cpu;
+                double cpu3 = cpu * cpu * cpu;
+                int thougput = throughputList.get(i).getCount();
+                //writer.write(cpu+","+cpu2+","+cpu3+","+thougput);
+                writer.write(cpu+","+thougput);
+                writer.write("\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @JsonIgnore
+    public void outputAllData() {
+        List<ThroughputRecord> throughputList = throughputMap.getRecordList();
+        List<PerfRecord> perfList = perfMap.getPerfList();
+        
+        assert(throughputList.size() == perfList.size());
+        
+        File cpuInput = new File("/Users/yusun/Desktop/cpu.arff");
+        try {
+            FileWriter writer = new FileWriter(cpuInput);
+            writer.write("@relation 'throughput'");
+            writer.write("\n");
+            writer.write("@attribute CPU numeric");
+            writer.write("\n");
+            writer.write("@attribute CPU2 numeric");
+            writer.write("\n");
+            writer.write("@attribute CPU3 numeric");
+            writer.write("\n");
+            writer.write("@attribute CPU4 numeric");
+            writer.write("\n");
+            writer.write("@attribute throughput numeric");
+            writer.write("\n");
+            writer.write("@data");
+            writer.write("\n");
+            
+            for(int i = 25; i < perfList.size(); i++) {
+                
+                double cpu = 100 - perfList.get(i).getCpuIdle();
+                double cpu2 = cpu * cpu;
+                double cpu3 = cpu * cpu * cpu;
+                double cpu4 = cpu * cpu * cpu * cpu;
+                int thougput = throughputList.get(i).getCount();
+                writer.write(cpu+","+cpu2+","+cpu3+","+cpu4+","+thougput);
+                writer.write("\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int getPeakThroughput() {
+        return peakThroughput;
+    }
+
+    public void setPeakThroughput(int peakThroughput) {
+        this.peakThroughput = peakThroughput;
     }
 }

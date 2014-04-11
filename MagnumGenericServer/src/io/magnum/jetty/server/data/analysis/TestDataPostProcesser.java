@@ -14,6 +14,7 @@ import java.util.Set;
 public class TestDataPostProcesser {
 
     private GlobalDataCollectorJsonWrapper data;
+    private int peakThroughput;
     private Set<CleanedThroughputRecord> cleanedList;
     
     public TestDataPostProcesser(GlobalDataCollectorJsonWrapper data) {
@@ -80,6 +81,10 @@ public class TestDataPostProcesser {
                 // cleaned record
                 cleanedRecord.setThroughput(avgPoint.getCount());
                 cleanedRecord.setLatency(avgPoint.getMean());
+                
+                if (avgPoint.getCount() > peakThroughput) {
+                    peakThroughput = avgPoint.getCount();
+                }
             }
             
             // perf data
@@ -138,6 +143,7 @@ public class TestDataPostProcesser {
             }
             
             start = end;
+            this.data.setPeakThroughput(peakThroughput);
         }
     }
 
@@ -147,5 +153,13 @@ public class TestDataPostProcesser {
 
     public void setData(GlobalDataCollectorJsonWrapper data) {
         this.data = data;
+    }
+
+    public int getPeakThroughput() {
+        return peakThroughput;
+    }
+
+    public void setPeakThroughput(int peakThroughput) {
+        this.peakThroughput = peakThroughput;
     }
 }

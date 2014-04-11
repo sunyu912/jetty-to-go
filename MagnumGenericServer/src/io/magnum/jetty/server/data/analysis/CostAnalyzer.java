@@ -18,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -93,7 +92,7 @@ public class CostAnalyzer {
     private CleanedThroughputRecord estimateRecord(
             AppPerformanceRecord record, Integer throughput) {
         List<CleanedThroughputRecord> orderedThroughputRecords = 
-                convertCleanedThroughputRecordSetToOrderedList(record.getThroughputList());        
+                record.getOrderredThroughputDataList();        
         
         CleanedThroughputRecord res = new CleanedThroughputRecord();
         CleanedThroughputRecord pre = null;
@@ -154,6 +153,11 @@ public class CostAnalyzer {
         }
         
         return resourceAllocation;
+    }
+    
+    public ResourceAllocation binPacking(List<ApplicationCandidate> candidates) {
+        BinPacker binPacker = new BinPackerImpl1(dataProvider);
+        return binPacker.binPacking(candidates);
     }
     
     public ResourceAllocation applicationsBinPacking(List<ApplicationCandidate> candidates) {
@@ -289,31 +293,17 @@ public class CostAnalyzer {
             }
         }
         return res;
-    }
+    }        
     
     private List<CleanedThroughputRecord> getAnalysisRecordsData(String containerId, String instanceType) {
         List<AppPerformanceRecord> records = getAppPerformanceRecords(containerId);
         for(AppPerformanceRecord r : records) {
             if (r.getInstanceType().endsWith(instanceType)) {                
-                return convertCleanedThroughputRecordSetToOrderedList(r.getThroughputList());
+                return r.getOrderredThroughputDataList();
             }
         }
         return null;
-    }
-    
-    /**
-     * The recorded throughput/latency/perf data points are stored in Set due to 
-     * the need of fitting DynamoDB mapper. This function turns it into an orderred 
-     * list.
-     */
-    private List<CleanedThroughputRecord> convertCleanedThroughputRecordSetToOrderedList(Set<CleanedThroughputRecord> set) {
-        List<CleanedThroughputRecord> res = new ArrayList<CleanedThroughputRecord>();
-        for(CleanedThroughputRecord ctr : set) {
-            res.add(ctr);
-        }
-        Collections.sort(res, new CleanedThroughputRecordComparator());
-        return res;
-    }
+    }    
     
     private ApplicationAllocation allocationApplication(ApplicationCandidate candidate) {
         ApplicationAllocation aa = new ApplicationAllocation();
@@ -391,21 +381,6 @@ public class CostAnalyzer {
         }        
     }
     
-    private class CleanedThroughputRecordComparator implements Comparator<CleanedThroughputRecord> {
-        @Override
-        public int compare(CleanedThroughputRecord arg0, CleanedThroughputRecord arg1) {
-            int c1 = arg0.getThroughput();
-            int c2 = arg1.getThroughput();
-            if (c1 > c2) {
-                return 1;
-            } else if (c1 == c2) {
-                return 0;
-            } else {
-                return -1;
-            }
-        }        
-    }
-    
     private class ApplicationCandidateComparator implements Comparator<ApplicationCandidate> {
         @Override
         public int compare(ApplicationCandidate o1, ApplicationCandidate o2) {
@@ -415,5 +390,9 @@ public class CostAnalyzer {
             double cost2 = Pricing.getCost(o2.getCurrentFirstChoice().getInstanceType());            
             return (int) (cost2 - cost1);
         }        
+    }
+
+    public ResourceAllocation getFinalSolution(ApplicationCandidate a) {
+        return this.getFinalSolution(a.getContainerId(), a.getTargetThroughput(), a.getTargetLatency());
     }
 }

@@ -96,6 +96,7 @@
       Date date = new Date(timestamp);
       String status = testInfo.getStatus();
       String modelUrl = testInfo.getResultModelUrl();
+      String processedModelUrl = testInfo.getProcessedResultModelUrl();
       String recordsUrl = testInfo.getTestRecordsUrl();
       String logUrl = testInfo.getJMeterLogUrl();            
   %>
@@ -127,6 +128,14 @@
           <td class="versionName cell-label"> Result Data URL </td>      
           <% if (modelUrl != null)  { %>   
           <td class="cell-info"><a href="<%= modelUrl %>"><%= modelUrl %></a></td>
+          <% } else { %>
+          <td class="cell-info">N/A</td>
+          <% } %>    
+      </tr>
+      <tr class="datarow">
+          <td class="versionName cell-label"> Processed Result Data URL </td>      
+          <% if (processedModelUrl != null)  { %>   
+          <td class="cell-info"><a href="<%= processedModelUrl %>"><%= processedModelUrl %></a></td>
           <% } else { %>
           <td class="cell-info">N/A</td>
           <% } %>    

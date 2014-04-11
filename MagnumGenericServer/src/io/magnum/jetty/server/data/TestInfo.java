@@ -50,6 +50,14 @@ public class TestInfo {
     }
     
     @DynamoDBIgnore
+    public String getProcessedResultModelUrl() {
+        if (status.equals(COMPLETED)) {
+            return S3_URL_RPEFIX + id + "/" + "throughput-perm-processed.json";
+        }        
+        return null;
+    }
+    
+    @DynamoDBIgnore
     public String getTestRecordsUrl() {
         if (status.equals(COMPLETED)) {
             return S3_URL_RPEFIX + id + "/" + "records.csv";

@@ -132,7 +132,8 @@ public class WebController {
     public ModelAndView getPackingSolution(
             @RequestParam("candidate") String[] candidateStrs,
             HttpServletResponse response) throws Exception {  
-                
+        
+        List<ResourceAllocation> individualRAs = new ArrayList<ResourceAllocation>();
         List<ApplicationCandidate> candidates = new ArrayList<ApplicationCandidate>();
         for(String candidateStr : candidateStrs) {
             String[] args = candidateStr.split("@");
@@ -141,11 +142,13 @@ public class WebController {
             a1.setTargetThroughput(Integer.parseInt(args[1]));
             a1.setTargetLatency(Double.parseDouble(args[2]));
             candidates.add(a1);
+            individualRAs.add(costAnalyzer.getFinalSolution(a1));
         }
         
         ModelAndView modelAndView = new ModelAndView("solution_viewer");
-        //modelAndView.addObject("peakResultList", records);
-        modelAndView.addObject("solution", costAnalyzer.applicationsBinPacking(candidates));
+        modelAndView.addObject("individualSolutions", individualRAs);
+        //modelAndView.addObject("solution", costAnalyzer.applicationsBinPacking(candidates));
+        modelAndView.addObject("solution", costAnalyzer.binPacking(candidates));
         return modelAndView;
     }
 
