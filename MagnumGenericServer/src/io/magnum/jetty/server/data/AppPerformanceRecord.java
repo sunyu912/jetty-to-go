@@ -194,6 +194,23 @@ public class AppPerformanceRecord {
         }
         return maxR;
     }
+    
+    @DynamoDBIgnore
+    public CleanedThroughputRecord getMinThroughputRecord(Double givenLatency) {
+        if (givenLatency == null) {
+            givenLatency = Double.MAX_VALUE * 0.8;
+        }
+        
+        int min = Integer.MAX_VALUE;
+        CleanedThroughputRecord minR = null;
+        for(CleanedThroughputRecord record : getThroughputList()) {
+            if (record.getThroughput() > min && record.getLatency() <= (givenLatency * 1.02)) {
+                min = record.getThroughput();
+                minR = record;
+            }
+        }
+        return minR;
+    }
 
     private static class CleanedThroughputRecordComparator implements Comparator<CleanedThroughputRecord> {
         @Override

@@ -58,9 +58,9 @@ public abstract class BinPacker {
         if (records == null) {
             records = dataProvider.listAppPerformanceRecord(containerId);
             recordCache.put(containerId, records);
-            logger.info("Missed cache!");
+            logger.debug("Missed cache!");
         } else {
-            logger.info("Hit cache!");
+            logger.debug("Hit cache!");
         }
         return records;
     }
@@ -69,28 +69,46 @@ public abstract class BinPacker {
             List<InstanceResource> allocatedResources) {
         
         // locate the first available bin
+        logger.info("Iteration {}: Total allocated bins: {}", index, allocatedResources.size());
         InstanceResource chosenBin = null;
+        boolean allocatedOnce = false;
         for(InstanceResource ir : allocatedResources) {
+            logger.info("Iteration: {} Bin Id: {} Type: {} CPU Remaining: {} Mem Remainging: {} Available for more: {}", index,
+                    ir.getId(), ir.getInstanceType(), ir.getRemainingCpu(), ir.getRemainingMem(), ir.hasRemaining());
             if (ir.hasRemaining()) {
+                // try to fill the remaining portion
                 chosenBin = ir;
-                break;
-            }        
+                
+                ApplicationAllocation aa = collocateApplication(firstCandidate, chosenBin);
+                if (aa != null) {
+                    chosenBin.getAllocatedApplications().add(aa);
+                    logger.info("Iteration {}: colocate {} in the existing bin type {} with throughput {}", index, 
+                            firstCandidate.getContainerId(), chosenBin.getInstanceType(), aa.getAllocatedThroughput());
+                    allocatedOnce = true;
+                    break;
+                }
+            }
         }
+        
         // if no existing bins is available, put a new bin for the application
-        if (chosenBin == null) {            
+        if (!allocatedOnce) {
             chosenBin = new InstanceResource();
             int binIndex = allocatedResources.size() + 1;
             chosenBin.setId(Integer.toString(binIndex));
             ApplicationAllocation aa = allocationApplication(firstCandidate);
-            chosenBin.getAllocatedApplications().add(aa);
-            chosenBin.setInstanceType(firstCandidate.getCurrentFirstChoice().getInstanceType());
-            allocatedResources.add(chosenBin);
-            logger.info("Interation {}: allocate a new bin type {} for {}", index, 
-                    firstCandidate.getCurrentFirstChoice().getInstanceType(), firstCandidate.getContainerId());
-        } else {
-            chosenBin.getAllocatedApplications().add((collocateApplication(firstCandidate, chosenBin)));
-            logger.info("Interation {}: colocate {} in the existing bin type {}", index, 
-                    firstCandidate.getContainerId(), chosenBin.getInstanceType());
+            if (aa != null) {
+                chosenBin.getAllocatedApplications().add(aa);
+                chosenBin.setInstanceType(firstCandidate.getCurrentFirstChoice().getInstanceType());
+                allocatedResources.add(chosenBin);
+                logger.info("Iteration {}: allocate a new bin type {} for {} with throughput {}", index, 
+                        firstCandidate.getCurrentFirstChoice().getInstanceType(), 
+                        firstCandidate.getContainerId(), aa.getAllocatedThroughput());
+            } else {
+                logger.warn("Iteration {}: Failed to allocate bin for application {}",
+                        index, firstCandidate.getContainerId());
+                throw new RuntimeException("Terminating the bin-packing because of unavailability for application " 
+                        + firstCandidate.getContainerId());
+            }
         }
     }
     
@@ -100,10 +118,15 @@ public abstract class BinPacker {
         double mem = chosenBin.getRemainingMem();
         String instanceType = chosenBin.getInstanceType();
         AppPerformanceRecord record = getAnalysisRecordsData(firstCandidate.getContainerId(), instanceType);
+        if (record == null) {
+            return null;
+        }
         ApplicationAllocation aa = record.getPredictor().predictThroughput(
-                cpu, mem, null, null, firstCandidate.getTargetLatency());
-        logger.info("TEST: aa" + aa);
-        firstCandidate.setRemainingThroughput(firstCandidate.getRemainingThroughput() - aa.getAllocatedThroughput());
+                cpu, mem, null, null, firstCandidate.getRemainingThroughput(), firstCandidate.getTargetLatency());
+        if (aa != null) {
+            aa.setContainerId(firstCandidate.getContainerId());
+            firstCandidate.setRemainingThroughput(firstCandidate.getRemainingThroughput() - aa.getAllocatedThroughput());
+        }
         return aa;
     }
 
@@ -179,6 +202,7 @@ public abstract class BinPacker {
                 
         // terminate when there are not items in the list
         while (candidates.size() > 0) {
+            logger.info("\n\nIteration {}: ", index);
             
             index++;
                         

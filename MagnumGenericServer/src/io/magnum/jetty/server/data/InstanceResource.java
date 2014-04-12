@@ -5,8 +5,8 @@ import java.util.List;
 
 public class InstanceResource {
     
-    public static double CPU_LIMIT = 0.95; // 95% 
-    public static double MEM_LIMIT = 0.95; // 95% 
+    public static double CPU_LIMIT = 95; // 95% 
+    public static double MEM_LIMIT = 95; // 95% 
     
     private String instanceType;
     private String id;

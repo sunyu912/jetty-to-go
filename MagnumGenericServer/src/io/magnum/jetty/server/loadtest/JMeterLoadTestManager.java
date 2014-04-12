@@ -147,7 +147,14 @@ public class JMeterLoadTestManager implements LoadTestManager {
             try {
                 // run jmeter
                 exec.execute();
-                // sync files to s3                
+                
+                // delete csv file - just too big and not necessary
+                File file = new File(testFolder + "/records.csv");
+                if (file.exists()) {
+                    file.delete();
+                }
+                
+                // sync files to s3
                 s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
                 
                 // post processing 

@@ -134,6 +134,7 @@ public class WebController {
             HttpServletResponse response) throws Exception {  
         
         List<ResourceAllocation> individualRAs = new ArrayList<ResourceAllocation>();
+        List<List<AppPerformanceRecord>> individualPeaks = new ArrayList<List<AppPerformanceRecord>>();
         List<ApplicationCandidate> candidates = new ArrayList<ApplicationCandidate>();
         for(String candidateStr : candidateStrs) {
             String[] args = candidateStr.split("@");
@@ -143,10 +144,12 @@ public class WebController {
             a1.setTargetLatency(Double.parseDouble(args[2]));
             candidates.add(a1);
             individualRAs.add(costAnalyzer.getFinalSolution(a1));
+            individualPeaks.add(costAnalyzer.listCost(args[0], Integer.parseInt(args[1]), Double.parseDouble(args[2])));
         }
         
         ModelAndView modelAndView = new ModelAndView("solution_viewer");
         modelAndView.addObject("individualSolutions", individualRAs);
+        modelAndView.addObject("individualPeaks", individualPeaks);
         //modelAndView.addObject("solution", costAnalyzer.applicationsBinPacking(candidates));
         modelAndView.addObject("solution", costAnalyzer.binPacking(candidates));
         return modelAndView;

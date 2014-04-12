@@ -6,6 +6,7 @@ import io.magnum.jetty.server.data.CleanedThroughputRecord;
 
 abstract public class ResourceThroughputPredictor {
     
+    
     private AppPerformanceRecord record;
     
     public ResourceThroughputPredictor() {    
@@ -16,7 +17,7 @@ abstract public class ResourceThroughputPredictor {
     }
     
     abstract public ApplicationAllocation predictThroughput(
-            Double cpu, Double mem, Double network, Double disk, Double latency);
+            Double cpu, Double mem, Double network, Double disk, Integer throughput, Double latency);
     
     abstract public ApplicationAllocation predictResource(
             Integer throughput, Double latency);

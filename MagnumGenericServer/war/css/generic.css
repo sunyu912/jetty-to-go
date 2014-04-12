@@ -5,6 +5,13 @@ table.block {
 	border-color: #A6CDDE;
 }
 
+table.block2 {
+    border-width: 3px;
+    border-style: solid;
+    border-collapse: collapse;
+    border-color: #DDB7A6;
+}
+
 table.error {
 	border-width: 3px;
 	border-style: solid;
@@ -18,6 +25,14 @@ tr.headrow {
 	font-weight: bold;
 	background-color: #A6CDDE;
 	width: 650;
+}
+
+tr.headrow2 {
+    font-family: Arial;
+    font-size: 14;
+    font-weight: bold;
+    background-color: #DDB7A6;
+    width: 650;
 }
 
 tr.error {

@@ -24,7 +24,6 @@ public class BinPackerImpl1 extends BinPacker {
             List<AppPerformanceRecord> orderredChoices = 
                     orderAppRecordsBasedOnCost(candidate.getContainerId(), candidate.getRemainingThroughput(), candidate.getTargetLatency());
             candidate.setCurrentFirstChoice(orderredChoices.get(0));
-            logger.info("TEST: set first can: " + orderredChoices.get(0));
         }
         
         // choose the biggest one to allocate
