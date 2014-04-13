@@ -36,6 +36,12 @@ public class TestDataPostProcesser {
             steps = 5;
         }
         
+        // when specifying the steps to be 1, we are getting a straight line,
+        // but we still want to see the performance in different stages.
+        if (steps == 1) {
+            steps = 5;
+        }
+        
         int start = warmup;
         int stepRate = (duration - 5 * steps) / steps;
         
