@@ -9,20 +9,30 @@ function startOptimizer() {
 			candidates.push(paramStr);
 		}
 	});
+	
+	var enableCotest = false;
+	$('.optionCheckbox').each(function(index, value) {		
+		if ($(this).attr('checked')) {
+			enableCotest = true;
+		}
+	});
+	
 	console.log(candidates);
 	if (candidates) {
-		triggerSolution(candidates);
+		triggerSolution(candidates, enableCotest);
 	}
 }
 
-function triggerSolution(candidates) {
+function triggerSolution(candidates, cotest) {	
 	$.ajax(
 	{
 		type : "GET",
 		url  : "/v1/roar/packing/solution",
 		traditional : true,
+		timeout : 60 * 1000 * 10,
 		data : {
-			candidate : candidates
+			candidate : candidates,
+			enableCotest : cotest
 		},
 		success : function(result) {                   
 			$('#resultSection').html(result);

@@ -146,15 +146,19 @@
       </tr>
       
       <% for(AppPerformanceRecord r : individualPeaks.get(i)) { %>
-      <tr class="datarow">     
+      <tr class="datarow">
           <td class="cell-info"><%= r.getInstanceType() %></td>
-          <td class="cell-info-short"><%= r.getPeakRecord().getThroughput() %></td>
-          <td class="cell-info-short"><%= r.getPeakRecord().getLatency() %></td>
-          <td class="cell-info-short"><%= r.getCostAtPeak() %></td>
-          <td class="cell-info-short"><%= Math.round(r.getPeakRecord().getCpu() * 100) / 100 %>%</td>
-          <td class="cell-info-short"><%= Math.round(r.getPeakRecord().getMem() * 100) / 100 %>%</td>
-          <td class="cell-info-short"><%= Math.round(r.getPeakRecord().getNetwork() / 1000) %></td>
-          <td class="cell-info-short"><%= r.getPeakRecord().getDisk() %></td>    
+          <% if (r.getPeakRecord() != null) { %>
+	          <td class="cell-info-short"><%= r.getPeakRecord().getThroughput() %></td>
+	          <td class="cell-info-short"><%= r.getPeakRecord().getLatency() %></td>
+	          <td class="cell-info-short"><%= r.getCostAtPeak() %></td>
+	          <td class="cell-info-short"><%= Math.round(r.getPeakRecord().getCpu() * 100) / 100 %>%</td>
+	          <td class="cell-info-short"><%= Math.round(r.getPeakRecord().getMem() * 100) / 100 %>%</td>
+	          <td class="cell-info-short"><%= Math.round(r.getPeakRecord().getNetwork() / 1000) %></td>
+	          <td class="cell-info-short"><%= r.getPeakRecord().getDisk() %></td>
+          <% } else { %>
+              <td class="cell-info-short"> N/A </td>
+          <% } %>    
       </tr>
       <% } %>
   </table>

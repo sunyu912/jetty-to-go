@@ -57,7 +57,7 @@ public class JMeterLoadTestManager implements LoadTestManager {
     }
     
     @Override
-    public String runTest(String testId, InputStream in, String containerId, String instanceType) {
+    public String runTest(String testId, InputStream in, String containerId, String instanceType, boolean isCotest) {
         // create test ID
         if (testId == null) {
             testId = UUID.randomUUID().toString();
@@ -81,13 +81,13 @@ public class JMeterLoadTestManager implements LoadTestManager {
         
         dataProvider.updateTestInfo(testId, TestInfo.PROCESSING);
         // execute
-        executor.submit(new JMeterTestExecution(testId, testFolder, file.getAbsolutePath(), containerId, instanceType));
+        executor.submit(new JMeterTestExecution(testId, testFolder, file.getAbsolutePath(), containerId, instanceType, isCotest));
         
         return testId;
     }
     
     @Override
-    public void postProcessingData(String testId, String containerId, String instanceType) {
+    public void postProcessingData(String testId, String containerId, String instanceType, boolean isCotest) {
         try {
             URL url = new URL("https://s3.amazonaws.com/roar-tests/" + testId + "/throughput-perm.json");
             GlobalDataCollectorJsonWrapper data = mapper.readValue(url, GlobalDataCollectorJsonWrapper.class);
@@ -102,7 +102,7 @@ public class JMeterLoadTestManager implements LoadTestManager {
             s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
             // save record in Dynamo
             logger.info("Updating database for {} / {}", containerId, instanceType);
-            if (containerId != null && instanceType != null) {
+            if (containerId != null && instanceType != null && !isCotest) {
                 AppPerformanceRecord record = new AppPerformanceRecord();
                 record.setContainerId(containerId);
                 record.setInstanceType(instanceType);
@@ -113,7 +113,7 @@ public class JMeterLoadTestManager implements LoadTestManager {
             logger.error("Failed to load the json file", e);
         } catch (AbortException e) {
             logger.error("Failed to sync the perf file back to s3", e);
-        }        
+        }
     }
     
     
@@ -126,13 +126,15 @@ public class JMeterLoadTestManager implements LoadTestManager {
         private String inputFile;
         private String containerId;
         private String instanceType;
+        private boolean isCotest;
         
-        JMeterTestExecution(String testId, String testFolder, String testFile, String containerId, String instanceType) {
+        JMeterTestExecution(String testId, String testFolder, String testFile, String containerId, String instanceType, boolean isCotest) {
             this.testId = testId;
             this.testFolder = testFolder;
             this.inputFile = testFile;
             this.containerId = containerId;
             this.instanceType = instanceType;
+            this.isCotest = isCotest;
         }
         
         @Override
@@ -158,7 +160,7 @@ public class JMeterLoadTestManager implements LoadTestManager {
                 s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
                 
                 // post processing 
-                postProcessingData(testId, containerId, instanceType);
+                postProcessingData(testId, containerId, instanceType, isCotest);
                 
                 // update test status
                 dataProvider.updateTestInfo(testId, TestInfo.COMPLETED);

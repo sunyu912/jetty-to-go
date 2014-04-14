@@ -12,8 +12,8 @@ import java.util.List;
 
 public class BinPackerImpl1 extends BinPacker {
 
-    public BinPackerImpl1(DataProvider provider) {
-        super(provider);
+    public BinPackerImpl1(DataProvider provider, boolean enableCotest) {
+        super(provider, enableCotest);
     }
 
     @Override

@@ -41,7 +41,9 @@
 	      </tr>	      
 	      <% index++; } %>      
 	  </table>
-	  <input id="gobutton" type="submit" value="Go" onclick="startOptimizer()">
+	  
+	  <p class="general-text"><input class="optionCheckbox" type="checkbox" name="cotest" value="">Enable Colocation Test</p>
+	  <input id="gobutton" type="submit" value="Go" onclick="startOptimizer()">    
   </div>
   
   <div id="resultSection">

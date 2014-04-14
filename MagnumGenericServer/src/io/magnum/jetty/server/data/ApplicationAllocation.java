@@ -4,6 +4,7 @@ public class ApplicationAllocation {
 
     private String containerId;
     private int allocatedThroughput;
+    private Double minLatency;
     private double cpu;
     private double mem;
     private double network;
@@ -59,5 +60,13 @@ public class ApplicationAllocation {
     
     public boolean isAllocated() {
         return allocatedThroughput > 0;
+    }
+
+    public Double getMinLatency() {
+        return minLatency;
+    }
+
+    public void setMinLatency(Double minLatency) {
+        this.minLatency = minLatency;
     }
 }

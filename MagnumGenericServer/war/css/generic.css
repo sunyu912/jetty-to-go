@@ -115,3 +115,8 @@ td.cell-info-container {
 #appSelector {
 	width: 700;	
 }
+
+.general-text {
+    font-family: Arial;
+    font-size: 12;    
+}

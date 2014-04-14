@@ -16,6 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +31,8 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class WebController {	
 
+    private static final Logger logger = LoggerFactory.getLogger(WebController.class);
+    
     /**
      * Jackson JSON mapper. This might be more convenient to use then
      * SimpleJson.
@@ -56,10 +60,13 @@ public class WebController {
             @RequestParam(value="testId", required=false) String testId,
             @RequestParam(value="containerId", required=false) String containerId,
             @RequestParam(value="instanceType", required=false) String instanceType,
+            @RequestParam(value="isCotest", required=false) boolean isCotest,
             @RequestParam("testPlan") MultipartFile imagefile,
             HttpServletResponse response) throws Exception {
 
-        String id = loadTestManager.runTest(testId, imagefile.getInputStream(), containerId, instanceType);
+        logger.info("Start test {} for containerId {} at instance type {} isCotest {}",
+                testId, containerId, instanceType, isCotest);
+        String id = loadTestManager.runTest(testId, imagefile.getInputStream(), containerId, instanceType, isCotest);
         response.getWriter().write(mapper.writeValueAsString(new RunTestResponse(id)));
     }
 
@@ -75,8 +82,10 @@ public class WebController {
             @PathVariable("testId") String testId,
             @RequestParam(value="containerId", required=false) String containerId,
             @RequestParam(value="instanceType", required=false) String instanceType,
+            @RequestParam(value="isCotest", required=false) boolean isCotest,
             HttpServletResponse response) throws Exception {
-        loadTestManager.postProcessingData(testId, containerId, instanceType);
+        
+        loadTestManager.postProcessingData(testId, containerId, instanceType, isCotest);
         response.getWriter().write(mapper.writeValueAsString(dataProvider.getTestInfo(testId)));
     }
 
@@ -131,6 +140,7 @@ public class WebController {
     @RequestMapping(value = "packing/solution", method = RequestMethod.GET)
     public ModelAndView getPackingSolution(
             @RequestParam("candidate") String[] candidateStrs,
+            @RequestParam(value="enableCotest", required=false) boolean enableCotest,
             HttpServletResponse response) throws Exception {  
         
         List<ResourceAllocation> individualRAs = new ArrayList<ResourceAllocation>();
@@ -151,7 +161,7 @@ public class WebController {
         modelAndView.addObject("individualSolutions", individualRAs);
         modelAndView.addObject("individualPeaks", individualPeaks);
         //modelAndView.addObject("solution", costAnalyzer.applicationsBinPacking(candidates));
-        modelAndView.addObject("solution", costAnalyzer.binPacking(candidates));
+        modelAndView.addObject("solution", costAnalyzer.binPacking(candidates, enableCotest));
         return modelAndView;
     }
 

@@ -155,8 +155,8 @@ public class CostAnalyzer {
         return resourceAllocation;
     }
     
-    public ResourceAllocation binPacking(List<ApplicationCandidate> candidates) {
-        BinPacker binPacker = new BinPackerImpl1(dataProvider);
+    public ResourceAllocation binPacking(List<ApplicationCandidate> candidates, boolean enableCotest) {
+        BinPacker binPacker = new BinPackerImpl1(dataProvider, enableCotest);
         return binPacker.binPacking(candidates);
     }
     
