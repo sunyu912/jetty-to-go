@@ -100,13 +100,14 @@ public class JMeterLoadTestManager implements LoadTestManager {
             mapper.writeValue(file, processor.getData());
             // sync back
             s3Helper.syncLocalFilesToS3Public(testFolder, S3_BUCKET, testId);
-            // save record in Dynamo
-            logger.info("Updating database for {} / {}", containerId, instanceType);
+            // save record in Dynamo            
             if (containerId != null && instanceType != null && !isCotest) {
+                logger.info("Updating database for {} / {}", containerId, instanceType);
                 AppPerformanceRecord record = new AppPerformanceRecord();
                 record.setContainerId(containerId);
                 record.setInstanceType(instanceType);
                 record.setThroughputList(processor.getCleanedList());
+                record.setEnabled(true);
                 dataProvider.updateGeneric(record);
             }
         } catch (IOException e) {

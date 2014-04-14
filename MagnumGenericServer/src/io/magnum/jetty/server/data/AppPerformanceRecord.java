@@ -22,6 +22,7 @@ public class AppPerformanceRecord {
     private String containerId;    
     private String instanceType; 
     private Set<CleanedThroughputRecord> throughputList;
+    private boolean enabled = true;
     
     /** Non-stored Assistant Fields */
     private List<CleanedThroughputRecord> orderredThroughputList;
@@ -210,6 +211,14 @@ public class AppPerformanceRecord {
             }
         }
         return minR;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     private static class CleanedThroughputRecordComparator implements Comparator<CleanedThroughputRecord> {
