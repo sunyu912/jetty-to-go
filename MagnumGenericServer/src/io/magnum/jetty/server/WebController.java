@@ -1,14 +1,17 @@
 package io.magnum.jetty.server;
 
 import io.magnum.jetty.server.data.AppConfigLoader;
+import io.magnum.jetty.server.data.Site;
 import io.magnum.jetty.server.data.TrendingSites;
 import io.magnum.jetty.server.data.provider.DataProvider;
 
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -41,36 +44,48 @@ public class WebController {
 		this.dataProvider = dataProvider;
 	}
 
-	@RequestMapping(value = "ar/site/trending", method = RequestMethod.GET)
+	@RequestMapping(value = "test/trending", method = RequestMethod.GET)
 	public void getTrendingSites(HttpServletResponse response) throws Exception {
 		response.getWriter().write(mapper.writeValueAsString(TrendingSites.getTrendingSites()));
 	}
 	
-	@RequestMapping(value = "ar/app/config", method = RequestMethod.GET)
+	@RequestMapping(value = "test/config", method = RequestMethod.GET)
     public void getConfigurations(HttpServletResponse response) throws Exception {
         response.getWriter().write(mapper.writeValueAsString(AppConfigLoader.getAppConfig()));        
     }
 	
 	@RequestMapping(value = "test/prime", method = RequestMethod.GET)
+	//@RequestMapping(value = "json", method = RequestMethod.GET)
     public void getPrime(
-            @RequestParam("range") int range,
+            @RequestParam(value="range", required=false) Integer range,
             HttpServletResponse response) throws Exception {
+	    if (range == null) {
+	        range = 10000;
+	    }
         response.getWriter().write(mapper.writeValueAsString(dataProvider.getPrimeNumbers(range)));        
     }
 	
-	@RequestMapping(value = "test/largefile", method = RequestMethod.GET)
+	//@RequestMapping(value = "test/largefile", method = RequestMethod.GET)
+	@RequestMapping(value = "json", method = RequestMethod.GET)
     public void getLargeFile(
-            HttpServletResponse response) throws Exception {
+            HttpServletResponse response) throws Exception {	    
 	    File file = new File("/tmp/largefile.dat");
+	    if (!file.exists()) {
+	        try {
+	               RandomAccessFile f = new RandomAccessFile("/tmp/largefile.dat", "rw");
+	               f.setLength(1024 * 1024 * 10);
+	               f.close();
+	               file = new File("/tmp/largefile.dat");
+	          } catch (Exception e) {
+	               System.err.println(e);
+	          }
+	    }
+	    
         int length   = 0;
         ServletOutputStream outStream = response.getOutputStream();
-//        ServletContext context  = getServletConfig().getServletContext();
-//        String mimetype = context.getMimeType(filePath);
-        
+
         // sets response content type
-//        if (mimetype == null) {
-          String mimetype = "application/octet-stream";
-//        }
+        String mimetype = "application/octet-stream";
         response.setContentType(mimetype);
         response.setContentLength((int)file.length());
         String fileName = (new File("/tmp/largefile.dat")).getName();
@@ -88,7 +103,19 @@ public class WebController {
         }
         
         in.close();
-        outStream.close();        
+        outStream.close();
+    }
+	
+	//@RequestMapping(value = "test/mem", method = RequestMethod.GET)
+	//@RequestMapping(value = "json", method = RequestMethod.GET)
+    public void largeMem(HttpServletResponse response) throws Exception {
+	    List<Site> siteList = new ArrayList<Site>();
+	    for(int i = 0; i < 100000; i++) {
+	        siteList.add(new Site());
+	    }
+	    
+        response.setStatus(200);
+        response.getWriter().write("success");
     }
 	
 	@RequestMapping(value = "ping", method = RequestMethod.GET)
