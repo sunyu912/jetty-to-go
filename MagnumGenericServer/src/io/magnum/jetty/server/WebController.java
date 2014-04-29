@@ -1,6 +1,8 @@
 package io.magnum.jetty.server;
 
+import io.magnum.jetty.server.data.provider.BibleManager;
 import io.magnum.jetty.server.data.provider.DataProvider;
+import io.magnum.jetty.server.data.provider.Sentence;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @Controller
@@ -34,9 +37,26 @@ public class WebController {
 		this.dataProvider = dataProvider;
 	}
 
-	@RequestMapping(value = "add", method = RequestMethod.GET)
-	public void addLocation(HttpServletResponse response) throws Exception {
-		
+	@RequestMapping(value = "reset", method = RequestMethod.GET)
+    public void resetGroup(
+            @RequestParam("id") String id,
+            HttpServletResponse response) throws Exception {
+	    if (id == null) {
+	        id = "1";
+	    }
+	    
+        BibleManager.get().updateGroup(id);
+        
+        response.setStatus(200);
+        response.getWriter().write("success");
+    }
+	
+	@RequestMapping(value = "next", method = RequestMethod.GET)
+	public void getNextSentenceLocation(HttpServletResponse response) throws Exception {
+	    Sentence s = BibleManager.get().getNextSentence();
+	    response.setContentType("text/html; charset=utf-8");
+	    response.setStatus(200);
+        response.getWriter().write(mapper.writeValueAsString(s));
 	}
 	
 	@RequestMapping(value = HEALTH_CHECK_API_PATH, method = RequestMethod.GET)
