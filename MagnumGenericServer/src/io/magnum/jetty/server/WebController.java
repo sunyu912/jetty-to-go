@@ -39,7 +39,7 @@ public class WebController {
 
 	@RequestMapping(value = "reset", method = RequestMethod.GET)
     public void resetGroup(
-            @RequestParam("id") String id,
+            @RequestParam(value = "id", required = false) String id,
             HttpServletResponse response) throws Exception {
 	    if (id == null) {
 	        id = "1";
