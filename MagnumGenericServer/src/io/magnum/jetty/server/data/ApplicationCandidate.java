@@ -1,6 +1,6 @@
 package io.magnum.jetty.server.data;
 
-public class ApplicationCandidate {
+public class ApplicationCandidate implements Cloneable {
 
     private String containerId;
     private Integer targetThroughput;
@@ -51,5 +51,19 @@ public class ApplicationCandidate {
 
     public void setCurrentFirstChoice(AppPerformanceRecord currentFirstChoice) {
         this.currentFirstChoice = currentFirstChoice;
+    }
+    
+    public ApplicationCandidate clone() throws CloneNotSupportedException {
+        ApplicationCandidate ac = new ApplicationCandidate();
+        ac.setContainerId(containerId);
+        ac.setRemainingThroughput(remainingThroughput);
+        ac.setTargetLatency(targetLatency);
+        ac.setTargetThroughput(targetThroughput);
+        ac.setCurrentFirstChoice(currentFirstChoice);
+        return ac;
+    }    
+    
+    public String toString() {
+        return getContainerId() + ":" + getTargetThroughput();
     }
 }

@@ -128,20 +128,35 @@ public class LinearSlopePredictor extends ResourceThroughputPredictor {
     public ApplicationAllocation predictResource(Integer throughput, Double latency) {
         CleanedThroughputRecord pre = null;
         for(CleanedThroughputRecord r : getRecord().getOrderredThroughputDataList()) {
-            if (throughput >= r.getThroughput()) {
+            if (throughput >= r.getThroughput() && latency >= r.getLatency()) {
                 pre = r;
             } else {
                 if (pre == null) {
-                    return null;
+                    if (latency < r.getLatency()) {
+                        return null;
+                    }
+                    ApplicationAllocation a = new ApplicationAllocation();
+                    a.setAllocatedThroughput(throughput);                
+                    a.setCpu(r.getCpu());
+                    a.setMem(r.getMem());
+                    a.setNetwork(r.getNetwork());
+                    return a;
                 }
-                double cpuL = (r.getThroughput() - pre.getThroughput()) / (r.getCpu() - pre.getCpu());
-                double cpuK = pre.getThroughput() - cpuL * pre.getCpu();                  
-                
-                ApplicationAllocation aa = new ApplicationAllocation();
-                aa.setAllocatedThroughput(throughput);
-                aa.setCpu((int) ((throughput - cpuK) / cpuL));                
-                return aa;
+                ApplicationAllocation a = new ApplicationAllocation();
+                a.setAllocatedThroughput(throughput);                
+                a.setCpu(getCpu(pre, r, throughput));
+                a.setMem(getMem(pre, r, throughput));
+                a.setNetwork(getNetwork(pre, r, throughput));                
+                return a;
             }
+        }                
+        if (pre != null) {
+            ApplicationAllocation a = new ApplicationAllocation();
+            a.setAllocatedThroughput(pre.getThroughput());                
+            a.setCpu(pre.getCpu());
+            a.setMem(pre.getMem());
+            a.setNetwork(pre.getNetwork());
+            return a;
         }
         return null;
     }

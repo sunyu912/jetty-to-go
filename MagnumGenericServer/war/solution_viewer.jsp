@@ -7,6 +7,7 @@
 <head>
     <title>Magnum ROAR Optimizer</title>
     <script src="/js/jquery.js"></script>
+    <script src="/js/thickbox-compressed.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
     <link href="/css/generic.css" rel="stylesheet" type="text/css">
 </head>
@@ -18,16 +19,48 @@
       for(ResourceAllocation ra : individualRAs) {
           totalIndividualCost += ra.getTotalCost();
       }
+      Integer totalIdealCost = (Integer) request.getAttribute("totalIdealCost");
+      Integer totalWorstCost = (Integer) request.getAttribute("totalWorstCost");
       List<List<AppPerformanceRecord>> individualPeaks =  (List<List<AppPerformanceRecord>>) request.getAttribute("individualPeaks");
-      ResourceAllocation resourceAllocation = (ResourceAllocation) request.getAttribute("solution");      
+      List<ResourceAllocation> ras = (List<ResourceAllocation>) request.getAttribute("solutions");      
   %>
   <p>
   <hr>
   
   <table class="block" border="1"> 
+      <caption class="appName">Cost Comparison</caption>    
+      <tr class="headrow">
+          <th>Solution Type</th>
+          <th>Total Cost</th>          
+      </tr>           
+      <%  int index = 0;
+          for(ResourceAllocation ra : ras) { index++; %>
+      <tr class="datarow">          
+          <td class="cell-info-container">BinPacking Solution <%= index %></td>
+          <td class="cell-info-short"><%= Math.round(ra.getTotalCost() * 10000) / 10000 %></td>              
+      </tr>
+      <% } %>
+      <tr class="datarow">          
+          <td class="cell-info-container">Total Individual Optimized</td>
+          <td class="cell-info-short"><%= Math.round(totalIndividualCost * 10000) / 10000 %></td>              
+      </tr>
+      <tr class="datarow">          
+          <td class="cell-info-container">Total Worst Solution</td>
+          <td class="cell-info-short"><%= totalWorstCost %></td>              
+      </tr>
+      <tr class="datarow">          
+          <td class="cell-info-container">Total Ideal Most-Optimized</td>
+          <td class="cell-info-short"><%= totalIdealCost %></td>              
+      </tr>
+  </table>
+  
+  
+  <% for(ResourceAllocation resourceAllocation : ras) { %>
+  <table class="block" border="1"> 
       <caption class="appName">Optimized Bin-Packing Solution (Most Cost-Effective) </caption>    
 
       <tr class="headrow">
+          <th>Sequence</th>
           <th>Instance Type</th>
           <th>Instance ID</th>
           <th>Container</th>
@@ -36,12 +69,14 @@
           <th>Memory</th>
           <th>Network I/O</th>
           <th>Disk I/O</th>
+          <th>Co-Test</th>
           <th>Cost</th>
       </tr>
       
       <% for(InstanceResource ir : resourceAllocation.getAllocatedResources()) { %>          
           <% for(ApplicationAllocation a : ir.getAllocatedApplications()) { %>
           <tr class="datarow">
+              <td class="cell-info-short"><%= a.getIndex() %></td>
 	          <td class="cell-info"><%= ir.getInstanceType() %></td>
 	          <td class="cell-info-short"><%= ir.getId() %></td>          
 	          <td class="cell-info-container"><%= a.getContainerId() %></td>
@@ -50,8 +85,25 @@
 	          <td class="cell-info-short"><%= Math.round(a.getMem() * 100) / 100 %>%</td>
 	          <td class="cell-info-short"><%= Math.round(a.getNetwork() / 1000) %></td>
 	          <td class="cell-info-short"><%= a.getDisk() %></td>
-          <% } %>
-              <td class="cell-info-short"><%= Math.round(ir.getCost() * 10000) / 10000 %></td>
+	          <% if (ir.getCotestId() != null) { %>
+	          <td class="cell-info-short">
+	              <a href="/cotest_result_viewer.html?testId=<%= ir.getCotestId() %>" title="ROAR" target="_blank">
+                      <img src="/icons/search.png" width="12"></img>
+                  </a>
+	          </td>
+	          <% } else { %>	          
+	          <td class="cell-info-short">
+                  N/A
+              </td>
+	          <% } %>
+	          
+	          <% if (ir.getAllocatedApplications().indexOf(a) == 0) { %>
+	              <td class="cell-info-short"><%= Math.round(ir.getCost() * 10000) / 10000 %></td>
+	          <% } else { %>
+	              <td class="cell-info-short">FREE</td>
+	          <% } %>
+	              
+          <% } %>              
           </tr>
       <% } %>
       <tr class="datarow">
@@ -63,25 +115,43 @@
           <td class="cell-info"></td>
           <td class="cell-info"></td>
           <td class="cell-info"></td>
+          <td class="cell-info"></td>
+          <td class="cell-info"></td>
           <td class="cell-info-short"><b><%= Math.round(resourceAllocation.getTotalCost() * 10000) / 10000 %></b></td>              
       </tr>
   </table>
+  <% } %>
   <p>
   <p>
-  <p>
+  <p>  
   <hr>
   
-  <table class="block" border="1"> 
+ <%--  <table class="block" border="1"> 
       <caption class="appName">Cost Comparison</caption>    
       <tr class="headrow">
           <th>Solution Type</th>
           <th>Total Cost</th>          
       </tr>           
+      <%  int index = 0;
+          for(ResourceAllocation ra : ras) { index++; %>
+      <tr class="datarow">          
+          <td class="cell-info-container">BinPacking Solution <%= index %></td>
+          <td class="cell-info-short"><%= Math.round(ra.getTotalCost() * 10000) / 10000 %></td>              
+      </tr>
+      <% } %>
       <tr class="datarow">          
           <td class="cell-info-container">Total Individual Optimized</td>
-          <td class="cell-info"><b><%= Math.round(totalIndividualCost * 10000) / 10000 %></b></td>              
+          <td class="cell-info-short"><%= Math.round(totalIndividualCost * 10000) / 10000 %></td>              
       </tr>
-  </table>
+      <tr class="datarow">          
+          <td class="cell-info-container">Total Worst Solution</td>
+          <td class="cell-info-short"><%= totalWorstCost %></td>              
+      </tr>
+      <tr class="datarow">          
+          <td class="cell-info-container">Total Ideal Most-Optimized</td>
+          <td class="cell-info-short"><%= totalIdealCost %></td>              
+      </tr>
+  </table> --%>
    
   <p>
   <hr>

@@ -9,6 +9,8 @@ public class ApplicationAllocation {
     private double mem;
     private double network;
     private double disk;
+    private int index;
+    private boolean verifiedFailure = false;
     
     public String getContainerId() {
         return containerId;
@@ -68,5 +70,21 @@ public class ApplicationAllocation {
 
     public void setMinLatency(Double minLatency) {
         this.minLatency = minLatency;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public boolean isVerifiedFailure() {
+        return verifiedFailure;
+    }
+
+    public void setVerifiedFailure(boolean verifiedFailure) {
+        this.verifiedFailure = verifiedFailure;
     }
 }

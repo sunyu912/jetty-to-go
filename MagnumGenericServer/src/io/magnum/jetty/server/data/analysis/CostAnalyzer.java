@@ -160,6 +160,15 @@ public class CostAnalyzer {
         return binPacker.binPacking(candidates);
     }
     
+    public ResourceAllocation binPacking2(List<ApplicationCandidate> candidates, boolean enableCotest) {
+        BinPacker binPacker = new BinPackerImpl2(dataProvider, enableCotest);
+        return binPacker.binPacking(candidates);
+    }
+    
+    public ResourceAllocation binPacking(BinPacker binPacker, List<ApplicationCandidate> candidates, boolean enableCotest) {
+        return binPacker.binPacking(candidates);
+    }
+    
     public ResourceAllocation applicationsBinPacking(List<ApplicationCandidate> candidates) {
         logger.info("****** BIN PACKING ******");
         ResourceAllocation resourceAllocation = new ResourceAllocation();
@@ -371,6 +380,21 @@ public class CostAnalyzer {
         public int compare(AppPerformanceRecord arg0, AppPerformanceRecord arg1) {
             Double c1 = arg0.getCostAtGivenThroughput() == null ? Double.MAX_VALUE : arg0.getCostAtGivenThroughput();
             Double c2 = arg1.getCostAtGivenThroughput() == null ? Double.MAX_VALUE : arg1.getCostAtGivenThroughput();
+            if (c1 > c2) {
+                return 1;
+            } else if (c1 == c2) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }        
+    }
+    
+    private class AppPerformanceRecordComparatorBasedOnPeakCost implements Comparator<AppPerformanceRecord> {
+        @Override
+        public int compare(AppPerformanceRecord arg0, AppPerformanceRecord arg1) {
+            Double c1 = arg0.getCostAtPeak() == null ? Double.MAX_VALUE : arg0.getCostAtPeak();
+            Double c2 = arg1.getCostAtPeak() == null ? Double.MAX_VALUE : arg1.getCostAtPeak();
             if (c1 > c2) {
                 return 1;
             } else if (c1 == c2) {

@@ -11,11 +11,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class BinPackerImpl1 extends BinPacker {
+public class BinPackerImpl3 extends BinPacker {
 
-    public BinPackerImpl1(DataProvider provider, boolean enableCotest) {
+    public BinPackerImpl3(DataProvider provider, boolean enableCotest) {
         super(provider, enableCotest);
-        setAlgName("Sort Item / Non-Sort Bin");
+        setAlgName("Non-Sort Item Biggest Item / Non-Sort Bin");
     }
 
     @Override
@@ -32,9 +32,9 @@ public class BinPackerImpl1 extends BinPacker {
                     orderAppRecordsBasedOnCost(candidate.getContainerId(), candidate.getRemainingThroughput(), candidate.getTargetLatency());
             candidate.setCurrentFirstChoice(orderredChoices.get(0));
         }
-        
-        // choose the biggest one to allocate
-        Collections.sort(candidates, new ApplicationCandidateComparatorBasedOnInstancePrice());
+//        
+//        // choose the biggest one to allocate
+//        Collections.sort(candidates, new ApplicationCandidateComparatorBasedOnInstancePrice());
     }
 
     @Override
@@ -56,12 +56,21 @@ public class BinPackerImpl1 extends BinPacker {
     @Override
     InstanceResource handleVerifiedFailure(ApplicationCandidate firstCandidate,
             ApplicationAllocation aa) {
+//        InstanceResource ir = new InstanceResource();
+//        ir.setInstanceType(firstCandidate.getCurrentFirstChoice().getInstanceType());
+//        System.out.println("YUSUNTEST: " + aa.getContainerId() + " - " + aa.getAllocatedThroughput() + firstCandidate.getCurrentFirstChoice().getInstanceType());
+//        ApplicationAllocation a = firstCandidate.getCurrentFirstChoice().getPredictor().predictResource(aa.getAllocatedThroughput(), firstCandidate.getTargetLatency());
+//        
+//        a.setContainerId(firstCandidate.getContainerId());
+//        firstCandidate.setRemainingThroughput(firstCandidate.getRemainingThroughput() - a.getAllocatedThroughput());
+//        ir.getAllocatedApplications().add(a);
+//        return ir;
         return null;
     }
 
     @Override
     ApplicationCandidate swtichFirstCandidate(List<ApplicationCandidate> candidates,
             InstanceResource ir) {
-        return null;
+        return null;        
     }
 }

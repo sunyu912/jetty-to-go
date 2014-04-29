@@ -11,6 +11,7 @@ public class InstanceResource {
     private String instanceType;
     private String id;
     private List<ApplicationAllocation> allocatedApplications = new ArrayList<ApplicationAllocation>();
+    private String cotestId;
     
     public String getInstanceType() {
         return instanceType;
@@ -82,5 +83,13 @@ public class InstanceResource {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getCotestId() {
+        return cotestId;
+    }
+
+    public void setCotestId(String cotestId) {
+        this.cotestId = cotestId;
     }
 }

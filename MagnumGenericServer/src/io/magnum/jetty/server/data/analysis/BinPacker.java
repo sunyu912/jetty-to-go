@@ -18,8 +18,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -41,6 +45,7 @@ public abstract class BinPacker {
     
     private DataProvider dataProvider;
     private boolean enableCotest;
+    private String algName;
     
     public BinPacker(DataProvider provider, boolean enableCotest) {
         this.dataProvider = provider;
@@ -48,12 +53,29 @@ public abstract class BinPacker {
     }
     
     protected int index = 0;
+    protected Map<String, Set<String>> cotestedMap = new HashMap<String, Set<String>>();
     
     abstract void sortApplicationCandidates(List<ApplicationCandidate> candidates);
     
     abstract void sortBins(List<InstanceResource> bins);
     
-    private AppPerformanceRecord getAnalysisRecordsData(String containerId, String instanceType) {
+    private boolean verifiedBefore(String containerId, String irId) {
+        Set<String> irIds = cotestedMap.get(containerId);
+        if (irIds != null && irIds.size() > 0) {
+            return irIds.contains(irId);
+        }
+        return false;
+    }
+    
+    private void putVerifiedRecordInMap(String containerId, String irId) {
+        Set<String> irIds = cotestedMap.get(containerId);
+        if (irIds != null) {
+            irIds = new HashSet<String>();
+        }
+        irIds.add(irId);
+    }
+    
+    protected AppPerformanceRecord getAnalysisRecordsData(String containerId, String instanceType) {
         List<AppPerformanceRecord> records = getAppPerformanceRecords(containerId);
         for(AppPerformanceRecord r : records) {
             if (r.getInstanceType().endsWith(instanceType)) {                
@@ -62,6 +84,8 @@ public abstract class BinPacker {
         }
         return null;
     } 
+    
+    abstract protected boolean isCotestAllowed();
     
     private List<AppPerformanceRecord> getAppPerformanceRecords(String containerId) {
         List<AppPerformanceRecord> records = recordCache.getIfPresent(containerId);
@@ -76,6 +100,10 @@ public abstract class BinPacker {
     }
     
     public void colocationVerification(InstanceResource ir, ApplicationAllocation aa) {
+        if (!isCotestAllowed()) {
+            return;
+        }
+        
         if (aa == null) {
             return;
         }        
@@ -105,6 +133,10 @@ public abstract class BinPacker {
         cotestRecord.setApps(apps);
         
         try {
+            File f = new File("/tmp/cotest.json");
+            if (f.exists()) {
+                f.delete();
+            }
             JsonMapper.mapper.writeValue(new File("/tmp/cotest.json"), cotestRecord);
         } catch (IOException e) {
             logger.error("Failed to generate the cotest json config", e);
@@ -174,49 +206,89 @@ public abstract class BinPacker {
                     logger.info("We do NOT adjust the throughput for the target app from {} to {}", 
                             aa.getAllocatedThroughput(), finalThroughput);
                 }
+                // record the cotest id
+                ir.setCotestId(cotest.getTimestamp().toString());
             }
         } catch (IOException e) {
             logger.error("Failed to get the result cotest", e);
         }                
     }
     
+    abstract InstanceResource handleVerifiedFailure(ApplicationCandidate firstCandidate, ApplicationAllocation aa);
+    abstract ApplicationCandidate swtichFirstCandidate(List<ApplicationCandidate> candidates, InstanceResource ir);
     
-    
-    private void fillCandidateToBins(ApplicationCandidate firstCandidate,
+    private void fillCandidateToBins(ApplicationCandidate firstCandidate, List<ApplicationCandidate> candidates,
             List<InstanceResource> allocatedResources) {
         
         // locate the first available bin
         logger.info("Iteration {}: Total allocated bins: {}", index, allocatedResources.size());
+        ApplicationCandidate originalFirstCandidate = firstCandidate;
         InstanceResource chosenBin = null;
         boolean allocatedOnce = false;
+        ApplicationAllocation aa = null;
         for(InstanceResource ir : allocatedResources) {
             logger.info("Iteration: {} Bin Id: {} Type: {} CPU Remaining: {} Mem Remainging: {} Available for more: {}", index,
                     ir.getId(), ir.getInstanceType(), ir.getRemainingCpu(), ir.getRemainingMem(), ir.hasRemaining());
             if (ir.hasRemaining()) {
                 // try to fill the remaining portion
-                chosenBin = ir;                
-                ApplicationAllocation aa = collocateApplication(firstCandidate, chosenBin);
+                chosenBin = ir;
+                
+                // change first candidate?
+                ApplicationCandidate newAc = swtichFirstCandidate(candidates, ir);
+                if (newAc != null) {
+                    logger.info("Iteration: {} switch first candidate from {} to {}", index,
+                            firstCandidate.getContainerId(), newAc.getContainerId());
+                    firstCandidate = newAc;
+                }
+                
+                aa = collocateApplication(firstCandidate, chosenBin);
                 if (enableCotest) {
                     colocationVerification(ir, aa);
+                } else {
+                    //simulateColocationVerification(ir, aa);
                 }
-                if (aa != null) {                    
+                if (aa != null && !aa.isVerifiedFailure()) {                    
                     chosenBin.getAllocatedApplications().add(aa);
                     logger.info("Iteration {}: colocate {} in the existing bin type {} with throughput {}", index, 
                             firstCandidate.getContainerId(), chosenBin.getInstanceType(), aa.getAllocatedThroughput());
                     allocatedOnce = true;
                     firstCandidate.setRemainingThroughput(firstCandidate.getRemainingThroughput() - aa.getAllocatedThroughput());
+                    aa.setIndex(index);
+                    
+                    if (firstCandidate != originalFirstCandidate) {
+                        if (firstCandidate != null && firstCandidate.isDone()) {
+                            logger.info("Since the switched element has been done, remove it from the list {}", firstCandidate.getContainerId());
+                            candidates.remove(firstCandidate);
+                        }
+                    }
                     break;
                 }
             }
         }
         
+        // do we only want to handle the portion of the unallocated app
+        if (aa != null && aa.isVerifiedFailure()) {
+            logger.info("Iteration {}: handle the failed verifiticaion situation for {}", index, firstCandidate.getContainerId());
+            InstanceResource newIr = handleVerifiedFailure(firstCandidate, aa);
+            if (newIr != null) {
+                logger.info("Iteration {}: allocated a NEW bin but only partially filled with the failed portion {} with remaining CPU {} MEM {}", 
+                        index, aa.getAllocatedThroughput(), newIr.getRemainingCpu(), newIr.getRemainingMem());
+                newIr.getAllocatedApplications().get(0).setIndex(index);
+                newIr.setId(Integer.toString(index));
+                allocatedResources.add(newIr);
+                allocatedOnce = true;
+            }
+        }
+        
         // if no existing bins is available, put a new bin for the application
         if (!allocatedOnce) {
+            firstCandidate = originalFirstCandidate;
             chosenBin = new InstanceResource();
             int binIndex = allocatedResources.size() + 1;
             chosenBin.setId(Integer.toString(binIndex));
-            ApplicationAllocation aa = allocationApplication(firstCandidate);
+            aa = allocationApplication(firstCandidate);
             if (aa != null) {
+                aa.setIndex(index);
                 chosenBin.getAllocatedApplications().add(aa);
                 chosenBin.setInstanceType(firstCandidate.getCurrentFirstChoice().getInstanceType());
                 allocatedResources.add(chosenBin);
@@ -229,9 +301,23 @@ public abstract class BinPacker {
                 throw new RuntimeException("Terminating the bin-packing because of unavailability for application " 
                         + firstCandidate.getContainerId());
             }
-        }                
+        }
     }
     
+    private void simulateColocationVerification(InstanceResource ir, ApplicationAllocation aa) {
+        if (aa == null) {
+            return;
+        }
+        
+        int cpu = (int) aa.getCpu();
+        if (cpu < 8) {
+            logger.info("Iteration {}: SIMULATION the allocated resource does NOT fit", index); 
+            aa.setVerifiedFailure(true);
+        } else {
+            logger.info("Iteration {}: SIMULATION the allocated resource does fit", index);
+        }
+    }
+
     private ApplicationAllocation collocateApplication(ApplicationCandidate firstCandidate,
             InstanceResource chosenBin) {
         double cpu = chosenBin.getRemainingCpu();
@@ -254,7 +340,9 @@ public abstract class BinPacker {
     private ApplicationAllocation allocationApplication(ApplicationCandidate candidate) {
         ApplicationAllocation aa = new ApplicationAllocation();
         aa.setContainerId(candidate.getContainerId());
-        if (candidate.getCurrentFirstChoice().isFullFill()) {
+        logger.info("DEBUG: " + candidate.getRemainingThroughput() + " VS " + candidate.getCurrentFirstChoice().getPeakRecord().getThroughput());
+        //if (candidate.getCurrentFirstChoice().isFullFill()) {
+        if (candidate.getRemainingThroughput() >= candidate.getCurrentFirstChoice().getPeakRecord().getThroughput()) {
             aa.setAllocatedThroughput(candidate.getCurrentFirstChoice().getPeakRecord().getThroughput());
             aa.setCpu(candidate.getCurrentFirstChoice().getPeakRecord().getCpu());
             aa.setMem(candidate.getCurrentFirstChoice().getPeakRecord().getMem());
@@ -335,31 +423,75 @@ public abstract class BinPacker {
             
             // get the first item
             ApplicationCandidate firstCandidate = candidates.get(0);
-            logger.info("Iteration {}: First Item {} Remaining Throughput {}", index, 
-                    firstCandidate.getContainerId(), firstCandidate.getRemainingThroughput());            
+            logger.info("Iteration {}: First Item {} Remaining Throughput {} + object id {}", index, 
+                    firstCandidate.getContainerId(), firstCandidate.getRemainingThroughput(), firstCandidate);            
             
             // sort existing bins
             logger.info("Iteration {}: Sorting all bins", index);
-            sortBins(resourceAllocation.getAllocatedResources());
+            sortBins(resourceAllocation.getAllocatedResources());            
             
             // fill item to a bin
-            fillCandidateToBins(firstCandidate, resourceAllocation.getAllocatedResources());
+            fillCandidateToBins(firstCandidate, candidates, resourceAllocation.getAllocatedResources());
             
             // if the current item is done, remove it from the list
             if (firstCandidate.isDone()) {
                 candidates.remove(firstCandidate);
                 logger.info("Iteration {}: Candidate {} is done, remove it from the list.", 
                         index, firstCandidate.getContainerId());
-            }            
+            }
         }
         
         return resourceAllocation;
     }   
     
-    public void processColocationResult() {
+    public ResourceAllocation getSolutionForSingleApp(String containerId, Integer throughput, Double latency) {        
+        ResourceAllocation resourceAllocation = new ResourceAllocation();
+        if (throughput == null) {
+            return resourceAllocation;
+        }
+        Integer remainingThroughput = throughput;
+        int index = 0;
+        while (remainingThroughput > 0) {
+            List<AppPerformanceRecord> orderedList = orderAppRecordsBasedOnCost(containerId, remainingThroughput, latency);
+            AppPerformanceRecord bestChoice = orderedList.get(0);
+            InstanceResource instanceResource = new InstanceResource();
+            index++;
+            instanceResource.setId(Integer.toString(index));
+            instanceResource.setInstanceType(bestChoice.getInstanceType());
+            
+            ApplicationAllocation applicationAllocation = new ApplicationAllocation();
+            applicationAllocation.setContainerId(containerId);
+            if (remainingThroughput >= bestChoice.getPeakRecord().getThroughput()) {
+                applicationAllocation.setAllocatedThroughput(bestChoice.getPeakRecord().getThroughput());
+                applicationAllocation.setCpu(bestChoice.getPeakRecord().getCpu());
+                applicationAllocation.setMem(bestChoice.getPeakRecord().getMem());
+                applicationAllocation.setNetwork(bestChoice.getPeakRecord().getNetwork());
+                applicationAllocation.setDisk(bestChoice.getPeakRecord().getDisk());
+                
+            } else {
+                applicationAllocation.setAllocatedThroughput(remainingThroughput);
+                CleanedThroughputRecord tmp = bestChoice.getPredictor().predictResourceInCTR(remainingThroughput, latency);
+                applicationAllocation.setCpu(tmp.getCpu());
+                applicationAllocation.setMem(tmp.getMem());
+                applicationAllocation.setNetwork(tmp.getNetwork());
+                applicationAllocation.setDisk(tmp.getDisk());
+            }                                                
+            instanceResource.getAllocatedApplications().add(applicationAllocation);
+            resourceAllocation.getAllocatedResources().add(instanceResource);
+            remainingThroughput -= bestChoice.getPeakRecord().getThroughput();
+        }
         
+        return resourceAllocation;
     }
     
+    public String getAlgName() {
+        return algName;
+    }
+
+    public void setAlgName(String algName) {
+        this.algName = algName;
+    }
+
     private class AppPerformanceRecordComparator implements Comparator<AppPerformanceRecord> {
         @Override
         public int compare(AppPerformanceRecord arg0, AppPerformanceRecord arg1) {
