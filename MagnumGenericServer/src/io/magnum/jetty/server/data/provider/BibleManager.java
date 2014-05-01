@@ -30,6 +30,8 @@ public class BibleManager {
     private String currentGroupId = null;
     private int currentIndex;
     
+    private Map<String, Sentence> sessionTracker;
+    
     private static BibleManager INSTANCE;    
     
     /**
@@ -49,14 +51,22 @@ public class BibleManager {
     public synchronized void updateGroup(String groupId) {
         currentGroupId = groupId;
         currentIndex = 0;
+        // clear session map
+        sessionTracker = new HashMap<String, Sentence>();
     }
     
-    public synchronized Sentence getNextSentence() {
+    public synchronized Sentence getNextSentence(String sessionId) {
         List<String> currentGroup = GROUP_MAP.get(currentGroupId);
+        if (sessionId != null && sessionTracker.containsKey(sessionId)) {
+            return sessionTracker.get(sessionId);
+        }
         if (currentGroup != null && currentIndex < currentGroup.size()) {
             Sentence res = new Sentence();
             res.setIndex(currentIndex);
             res.setSentence(currentGroup.get(currentIndex));
+            if (sessionId != null) {
+                sessionTracker.put(sessionId, res);
+            }
             currentIndex++;
             return res;
         }
