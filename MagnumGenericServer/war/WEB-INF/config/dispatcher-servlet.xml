@@ -37,19 +37,7 @@
 		</property>
 		<property name="ignoreUnresolvablePlaceholders" value="true" />
 		<property name="ignoreResourceNotFound" value="true" />
-	</bean>
-	
-	<bean id="awsContext" factory-method="createAwsContext"	class="com.hd4ar.awscommon.AwsContext">
-		<constructor-arg value="${awsRegion}" />
-		<constructor-arg value="${accessKey}" />
-		<constructor-arg value="${secretKey}" />
-	</bean>
-	
-	<bean id="dataProvider" class="io.magnum.jetty.server.data.provider.DataProviderImpl">
-		<constructor-arg>
-			<bean factory-bean="awsContext" factory-method="getDynamoDBClient" />
-		</constructor-arg>
-	</bean>
+	</bean>	
 
 	<context:annotation-config />
 </beans>
