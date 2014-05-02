@@ -1,35 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>校园团契</title>
+		<meta charset="utf-8" />
+		<title>New design for mobifreaks</title>
 		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0" />
 		<link rel="stylesheet" href="css/style.css"/>
         <link href="http://mobifreaks.com/wp-content/demos/demo.css" rel="stylesheet" type="text/css" />
-        <script>
-    function getNextSentence() {
-        $.ajax(
-        {
-            type : "GET",
-            url  : "/v1/next",
-            data : {
-            },
-            success : function(result) {
-                var data = JSON.parse(result);
-                if (data) {
-                    $('#indexText').html('You are lucky No. ' + (data.index + 1));
-                    $('#sentenceText').text(data.sentence);
-                } else {
-                    $('#indexText').html("You are not lukcy :(");
-                    $('#sentenceText').text("经文已经发完了，下次要点快些！");
-                }
-            },
-            error: function (jqXHR, exception) {
-                //alert("Failed");
-            }
-        });
-    }
-    </script>
 	</head>
 	<body >
 <!--
@@ -53,8 +29,8 @@
  -->
 		<div class="wrap">
 		<header class="header">
-			<div class="logo"><a href="index.html"><img src="images/mylogo.png" alt=""/></a></div>
-			<!-- <div class="menu-but"><a href="#menu"><img src="images/menu.png"/></a></div> -->
+			<div class="logo"><a href="index.html"><img src="images/logo.png" alt=""/></a></div>
+			<div class="menu-but"><a href="#menu"><img src="images/menu.png"/></a></div>
 			<br class="clearfix"/>
 		</header>
 			<hr class="separator"/>
@@ -62,21 +38,19 @@
 		<div class="container">
 				<!-- Image Slider -->
 				<ul id="slider" class="slider">
-			      <li><img src="images/stock/image1.jpg" alt="" /></li>
-			      <li><img src="images/stock/image2.jpg" alt="" /></li>
-			      <li><img src="images/stock/image3.jpg" alt="" /></li>
-			      <li><img src="images/stock/image4.jpg" alt="" /></li>
-			      <li><img src="images/stock/image5.jpg" alt="" /></li>
+			      <li><img src="images/stock/6.jpg" alt="" /></li>
+			      <li><img src="images/stock/2.jpg" alt="" /></li>
+			      <li><img src="images/stock/3.jpg" alt="" /></li>
+			      <li><img src="images/stock/4.jpg" alt="" /></li>
+			      <li><img src="images/stock/5.jpg" alt="" /></li>
+			      <li><img src="images/stock/1.jpg" alt="" /></li>
 			    </ul>
-			<div class="buttonHolder">
-			     <input type="submit" value="抽取经文" onclick="getNextSentence()">
+			<div class="content">
+				<h2>Welcome</h2>
+				<p>Good news, everyone! I've taught the toaster to feel love! You guys go on without me! I'm going to go… look for more stuff to steal! Oh right.</p>
 			</div>
 			<hr class="separator"/>
-			<div class="content">
-				<h2 id="indexText"></h2>
-				<p id="sentenceText"></p>
-			</div>			
-			<!-- <aside>
+			<aside>
 				<a name="menu"></a>
 				<ul class="menu">
 					<li class="icon home"><a href="index.html">Home</a></li>
@@ -85,30 +59,50 @@
 					<li class="icon bubble"><a href="contact.html">Contact Us</a></li>
 					<li class="icon add"><a href="referance.html">Referance</a></li>
 				</ul>
-			</aside> -->
+			</aside>
 		</div>
 		<hr class="separator"/>
 		<footer class="footer">
-			<p>&copy; 2014 ncbcfellowship.com</p>
-			<p>
-			<!-- <div class="social">
+			<p>&copy; 2012 YourDomain.com &bull; All Rights Reserved</p>
+			<div class="social">
 				<a href="#"><img src="images/facebook.png" alt=""></a>
 				<a href="#"><img src="images/twitter.png" alt=""></a>
 				<a href="#"><img src="images/gplus.png" alt=""></a>
-			</div> -->
+			</div>
 		</footer>
-		<!-- <div class="copy">Design by <a href="#">Mobifreaks</a>.com</div> -->
+		<div class="copy">Design by <a href="#">Mobifreaks</a>.com</div>
 		</div>
 		<script src="js/jquery.min.js"></script>
 		<script src="js/slider.min.js"></script>
 		<script>
-		$(function () {		
+		$(function () {
+		
 		  // Slideshow 1
 		  $("#slider").responsiveSlides({
 		    maxwidth: 800,
 		    speed: 800
-		  });		
+		  });
+		
 		});
 		</script> 	
+<!--
+	Author Details
+	==============
+
+	Author: Mobifreaks
+	Author URL: http://mobifreaks.com
+
+	Attribution( is must on every page, where this work is used. should be visible to naked eye and Search engine bot[ means should not use noindex, nofollow relations ]):
+
+	// a healty attribution looks like following
+	<a href="http://mobifreaks.com" target="_blank">Design by Mobifreaks</a>
+
+	License: Creative Commons Attribution 3.0 Unported
+	License URL: http://creativecommons.org/licenses/by/3.0/
+
+	if any regards of infringement, may lead to lawsuit under Digital Millennium Copyright Act (DMCA)
+
+	For Attribution removal request. please consider contacting us through http://mobifreaks.com/feedback/ or mail us at support[at]mobifreaks.com
+ -->	
 	</body>
 </html>

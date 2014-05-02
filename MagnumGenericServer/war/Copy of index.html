@@ -1,0 +1,43 @@
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Vandy Campus Fellowship</title>
+	
+	<script src="http://code.jquery.com/jquery-1.9.0.js"></script>
+	<script src="http://code.jquery.com/jquery-migrate-1.0.0.js"></script>	
+	<script>
+	function getNextSentence() {
+		$.ajax(
+		{
+			type : "GET",
+			url  : "/v1/next",
+			data : {
+			},
+			success : function(result) {
+				var data = JSON.parse(result);
+				if (data) {
+					$('#indexText').html(data.index);
+					$('#sentenceText').text(data.sentence);
+				} else {
+					$('#indexText').html("");
+					$('#sentenceText').text("你太慢了，下次要点快些！");
+				}
+			},
+			error: function (jqXHR, exception) {
+				//alert("Failed");
+			}
+		});
+	}
+	</script>
+</head>
+
+<body>
+	<!-- Wei, when you are free, could you help to make the whole web UI and experience a little better? :) Thanks a lot! -->
+	<h3>NCBC Campus Fellowship(5/2/2014)</h3>
+	<input id="gobutton" type="submit" value="获得经文" onclick="getNextSentence()">
+	<h3 id="indexText"></h3>
+	<h3 id="sentenceText"></h3>
+</body>
+
+</html>
