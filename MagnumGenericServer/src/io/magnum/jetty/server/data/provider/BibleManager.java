@@ -9,17 +9,17 @@ import java.util.Map;
 public class BibleManager {
 
     private static List<String> GROUP1 = Collections.unmodifiableList(new ArrayList<String>() {{
-       add("我們日用的飲食，天天賜給我們。");
-       add("每早晨這都是新的，你的誠實極其廣大。");
-       add("你們存心不可貪愛錢財，要以自己所有的為足；因為主曾說。");
-       add("我將這些事告訴你們，是要叫你們在我裡面有平安。在世上你們有苦難，但你們可以放心，我已經勝了世界。");
+       add("[彼得前书5:7] 你们要将一切的忧虑卸给神，因为祂顾念你们。");
+       add("[腓利比书4:6] 应当一无挂虑，只要凡事借着祷告、祈求，带着感谢，将你们所要的告诉神；神那超越人所能理解的平安，必在基督耶稣里，保卫你们的心怀意念。");
+       add("[Matthew 6:34] Therefore do not worry about tomorrow, for tomorrow will worry about itself. Each day has enough trouble of its own.");
+       add("请翻译刚才的第三句英文经文 ^-^");
     }});
 
     private static List<String> GROUP2 = Collections.unmodifiableList(new ArrayList<String>() {{
-        add("帝必聆听您的祷告，他必不撇下您");
-        add("这是上帝拯救世人脱离罪恶最痛苦的一幕。");
-        add("耶稣没有陷入这批人引起的苦难之中。");
-        add("患难最好的态度，就是全心全力爱上帝");
+        add("［约翰福音15:5］我是葡萄树，你们是枝子；常在我里面的，我也常在他里面，这人就多结果子。因为离了我，你们就不能做什么。");
+        add("［约翰福音15:8］你们多结果子，我父就因此得荣耀，你们也就是我的门徒了。");
+        add("［以弗所书2:10］我们原是他的工作，在基督耶稣里造成的，为要叫我们行善，就是神所预备叫我们行的。");
+        add("［歌罗西书1:10］好叫你们行事为人对得起主，凡事蒙他喜悦，在一切善事上结果子，渐渐的多知道神。");
     }});
     
     private static Map<String, List<String>> GROUP_MAP = Collections.unmodifiableMap(new HashMap<String, List<String>>(){{
@@ -35,7 +35,7 @@ public class BibleManager {
     private static BibleManager INSTANCE;    
     
     /**
-     * Singletons
+     * Singleton
      */
     public static BibleManager get() {
         if (INSTANCE == null) {
