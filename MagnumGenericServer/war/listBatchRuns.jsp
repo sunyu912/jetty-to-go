@@ -7,11 +7,15 @@
 <html>
 <head>
     <title>Batch Run List</title>
-    <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
     <link href="/css/generic.css" rel="stylesheet" type="text/css">        
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-theme.min.css" rel="stylesheet">
+    <script type="text/javascript">
+    </script>
 </head>
 <body>
 
@@ -65,13 +69,13 @@
           <td class="cell-info">
               <a href="<%= record.getFileUrl() %>" target="_blank"><%= record.getFileUrl() %></a>
           </td>      
-                  
+      
 	  </tr>
   <%
     }
   %>
   </table>
-  
+    
   </div>
 </body>
 </html>

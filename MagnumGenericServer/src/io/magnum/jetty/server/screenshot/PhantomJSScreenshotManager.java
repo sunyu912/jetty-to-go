@@ -89,10 +89,10 @@ public class PhantomJSScreenshotManager implements ScreenshotManager {
             for(String url : urlRetyList) {
                 logger.info("Capturing screenshot for url {}", url);
                 // capture screenshot
-                Exec exec = new Exec("/usr/local/bin/phantomjs /usr/local/Cellar/phantomjs/1.9.7/share/phantomjs/examples/rasterize.js "
-                        + url + " " + tmpImageFile.getAbsolutePath());
-//                Exec exec = new Exec("/home/ubuntu/phantomjs/bin/phantomjs /home/ubuntu/rasterize.js "
+//                Exec exec = new Exec("/usr/local/bin/phantomjs /usr/local/Cellar/phantomjs/1.9.7/share/phantomjs/examples/rasterize.js "
 //                        + url + " " + tmpImageFile.getAbsolutePath());
+                Exec exec = new Exec("/home/ubuntu/phantomjs/bin/phantomjs /home/ubuntu/rasterize.js "
+                        + url + " " + tmpImageFile.getAbsolutePath());
                 
                 try {
                     exec.execute();
