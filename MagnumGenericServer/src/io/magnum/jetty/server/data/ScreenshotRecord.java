@@ -1,6 +1,7 @@
 package io.magnum.jetty.server.data;
 
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodb.datamodeling.DynamoDBMarshalling;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBTable;
 
@@ -12,6 +13,7 @@ public class ScreenshotRecord {
     private String id;
     private Long timestamp;
     private boolean isSuccess;
+    private AnalysisResult analysisResult;
     
     @DynamoDBRangeKey
     public Long getTimestamp() {
@@ -53,5 +55,14 @@ public class ScreenshotRecord {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    @DynamoDBMarshalling(marshallerClass = AnalysisResultMarshaller.class)
+    public AnalysisResult getAnalysisResult() {
+        return analysisResult;
+    }
+
+    public void setAnalysisResult(AnalysisResult analysisResult) {
+        this.analysisResult = analysisResult;
     }   
 }

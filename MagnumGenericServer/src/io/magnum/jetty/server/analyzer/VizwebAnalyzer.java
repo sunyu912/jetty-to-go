@@ -24,11 +24,10 @@ public class VizwebAnalyzer extends BBDSAnalyzer {
     
     private static Logger logger = LoggerFactory.getLogger(VizwebAnalyzer.class);   
     
-    public ColorFeatureResult computeColorFeature(String id) {
+    public ColorFeatureResult computeColorFeature(String id, File inputFile) {
         BufferedImage input = null;
         try {
-            File f = syncInputFile(id);
-            logger.info("TEST: File: " + f.getAbsolutePath() + " EXIST: " + f.exists());
+            File f = inputFile == null ? syncInputFile(id) : inputFile;
             input = ImageIO.read(f);
         } catch (AbortException e) {
             logger.error("Failed to get the input file.", e);
@@ -44,19 +43,20 @@ public class VizwebAnalyzer extends BBDSAnalyzer {
             logger.error("Failed to get the colorfullness", e);
         }
         
-        try {
-            double col = ColorFeatureComputer.computeColorfulness2(input);
-            result.setColorfulness2(col);
-        } catch (Exception e) {
-            logger.error("Failed to get the colorfullness2", e);
-        }        
+        // the following feature calculate cause exception every time
+//        try {
+//            double col = ColorFeatureComputer.computeColorfulness2(input);
+//            result.setColorfulness2(col);
+//        } catch (Exception e) {
+//            logger.error("Failed to get the colorfullness2", e);
+//        }        
         return result;
     }
     
-    public XYFeatureResult computerXYFeature(String id) {
+    public XYFeatureResult computerXYFeature(String id, File inputFile) {
         BufferedImage input = null;
         try {
-            File f = syncInputFile(id);
+            File f = inputFile == null ? syncInputFile(id) : inputFile;
             input = ImageIO.read(f);
         } catch (AbortException e) {
             logger.error("Failed to get the input file.", e);
@@ -84,10 +84,10 @@ public class VizwebAnalyzer extends BBDSAnalyzer {
         return result;
     }
     
-    public QuadtreeFeatureResult computerQuadtreeFeature(String id) {
+    public QuadtreeFeatureResult computerQuadtreeFeature(String id, File inputFile) {
         BufferedImage input = null;
         try {
-            File f = syncInputFile(id);
+            File f = inputFile == null ? syncInputFile(id) : inputFile;
             input = ImageIO.read(f);
         } catch (AbortException e) {
             logger.error("Failed to get the input file.", e);

@@ -7,6 +7,7 @@ public class ResourceLocator {
     public static String tmpFolder = System.getProperty("java.io.tmpdir");
     
     public static final String IMAGE_BUCKET = "yu-test";
+    public static final String URL_FILE_BUCKET = "bbds-url";
     public static final String S3URL_PREFIX = "https://s3.amazonaws.com";
     
     public static File getLocalImageFile(String id) {

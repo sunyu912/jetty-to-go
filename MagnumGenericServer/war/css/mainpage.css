@@ -1,0 +1,139 @@
+b#title {
+color: #F88017;
+font-family: Arial;
+text-indent: 50px;  
+font-size: 20;
+position:absolute;
+left:7px;
+top: 42px;
+}
+h2 {
+color: #F88017;
+font-family: Arial;
+text-indent: 70px;
+}
+body {
+font-family: Arial;
+font-size: 14;
+}
+select {
+font-family: Arial;
+}
+input {
+font-family: Arial;
+}
+urltext {
+font-size: 14;
+margin-top:10px;
+margin-bottom:10px;
+}
+table.block { 
+border-width: 3px;
+border-style: solid;
+border-collapse: collapse;
+border-color: #A6CDDE;
+}
+table.error {
+border-width: 3px;
+border-style: solid;
+border-collapse: collapse;
+border-color: #F6358A;
+}
+tr.headrow {
+font-family: Arial;
+font-size: 14;
+font-weight: bold;
+background-color: #A6CDDE;
+width: 650; 
+}
+tr.error {
+font-family: Arial;
+font-size: 14;
+font-weight: bold;
+background-color: #F6358A;
+width: 530;
+}
+tr.datarow {
+border-width: 2px;
+border-style: solid;
+border-color: #FFFFFF;
+}
+td.cell-no {
+font-family: Arial;
+font-weight: bold;
+font-size: 12;
+background-color: #EEE;
+width: 40;
+}
+td.cell-label {
+font-family: Arial;
+font-weight: bold;
+font-size: 12;
+background-color: #EEE;
+width: 300;
+}
+td.cell-info {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 350;
+}
+td.cell-info2 {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 203;
+}
+td.cell-info3 {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 50;
+}
+td.cell-info4 {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 310;
+}
+td.cell-info5 {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 237;
+}
+td.cell-error {
+font-family: Arial;
+font-size: 12;
+background-color: #EEE;
+width: 530;
+}
+pImg {
+border:0;
+padding-top:25px;
+top:200px;
+}
+resultSection {
+margin-top: 50;
+font-size: 10;
+}
+.main-page-container {
+	margin-top: 70;
+}
+#resultImageUrl {
+    font-size: 12;
+}
+
+#processingImg {
+    top: 77;
+    position:absolute;
+    border: 0;
+}
+#resultImageImg {
+    padding-top: 5;    
+    display: block;
+}
+
+#analysisResult {
+    vertical-align:top;
+}
