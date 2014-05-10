@@ -45,13 +45,15 @@
       List<BatchRunRecord> records = (List<BatchRunRecord>) request.getAttribute("batchRuns");      
   %>  
   
-  <table class="block" border="1"> 
+  <table class="table table-striped table-bordered table-hover table-condensed"> 
       <caption class="appName">Batch Run List</caption>
+      <thead>
 	  <tr class="headrow">
 		  <th>ID</th>
 		  <th>Description</th>
-		  <th>File URL</th>
+		  <th>URL List</th>
 	  </tr>
+	  </thead>
 
   <%
     for(BatchRunRecord record : records) {
