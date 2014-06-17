@@ -7,7 +7,9 @@ import io.magnum.jetty.server.data.shared.PerfRecord;
 import io.magnum.jetty.server.data.shared.ThroughputRecord;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -26,8 +28,15 @@ public class TestDataPostProcesser {
     public Set<CleanedThroughputRecord> getCleanedList() {
         return cleanedList;
     }
+    
+    public void analyzeHostPeak() {
+        
+    }
         
     public void captureValidPoints() {
+        
+        Map<String, Boolean> fullnessMap = new HashMap<String, Boolean>();
+        
         int steps = getData().getSteps();
         int warmup = getData().getWarmupDuration() + 5;
         int duration = getData().getDuration();
@@ -145,11 +154,17 @@ public class TestDataPostProcesser {
                     cleanedRecord.setDisk(rr.getDisk());
                     
                     this.cleanedList.add(cleanedRecord);
+                    
+                    // check fullness
+                    if (rr.getCpu() > 95 || rr.getMemory() > 95) {
+                        fullnessMap.put(entry.getKey(), true);
+                    }
                 }
             }
             
             start = end;
             this.data.setPeakThroughput(peakThroughput);
+            this.data.setHostFullnessMap(fullnessMap);
         }
     }
 

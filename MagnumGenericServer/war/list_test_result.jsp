@@ -131,9 +131,18 @@
           <td class="cell-info"><a href="/v1/roar/test/run/<%=record.getTestId() %>/checker"><%= record.getTestId() %></a></td>
           <%-- <td class="cell-info-short"><a href="javascript:showResultPageInIFrame('/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>');">Open Viewer</a></td> --%>
           <td class="cell-info-short">
-            <a href="/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>&KeepThis=true&TB_iframe=true&height=800&width=900" title="ROAR" class="thickbox">Open Viewer</a>
+            <% if (record.isMtRecord()) { %>
+              <a href="/result_viewer3.html?testId=<%= record.getTestId() %>&id=<%= record.getContainerId() %>&timestamp=<%= record.getTimestamp()%>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>&KeepThis=true&TB_iframe=true&height=800&width=900" title="ROAR" class="thickbox">Open Viewer</a>
+            <% } else { %>
+              <a href="/result_viewer.html?testId=<%= record.getTestId() %>&app=<%=record.getContainerId() %>&type=<%=record.getInstanceType() %>&KeepThis=true&TB_iframe=true&height=800&width=900" title="ROAR" class="thickbox">Open Viewer</a>
+            <% } %>
           </td>
-          <td class="cell-info"><%= record.getNotes() %></td>  
+          
+          <td class="cell-info">
+            <% if (!record.isMtRecord()) { %>
+                <%= record.getNotes() %>
+            <% } %>
+          </td>  
       </tr>
       <% } %>
   </table>

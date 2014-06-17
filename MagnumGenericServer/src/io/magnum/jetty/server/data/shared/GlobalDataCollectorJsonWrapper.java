@@ -3,7 +3,9 @@ package io.magnum.jetty.server.data.shared;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
@@ -22,12 +24,14 @@ public class GlobalDataCollectorJsonWrapper {
 	// processed fields
 	private TimeThroughputMap capturedThroughputPoints;
 	private HostPerfMap capturedPerfPoints;
+	private Map<String, Boolean> hostFullnessMap;
 	
 	public GlobalDataCollectorJsonWrapper() {
 		perfMap = new HostPerfMap();
 		throughputMap = new TimeThroughputMap();
 		capturedPerfPoints = new HostPerfMap();
         capturedThroughputPoints = new TimeThroughputMap();
+        hostFullnessMap = new HashMap<String, Boolean>();
 	}
 	
 	public GlobalDataCollectorJsonWrapper(HostPerfMap perfMap,
@@ -193,5 +197,13 @@ public class GlobalDataCollectorJsonWrapper {
 
     public void setPeakThroughput(int peakThroughput) {
         this.peakThroughput = peakThroughput;
+    }
+
+    public Map<String, Boolean> getHostFullnessMap() {
+        return hostFullnessMap;
+    }
+
+    public void setHostFullnessMap(Map<String, Boolean> hostFullnessMap) {
+        this.hostFullnessMap = hostFullnessMap;
     }
 }

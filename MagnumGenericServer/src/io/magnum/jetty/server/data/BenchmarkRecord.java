@@ -1,6 +1,9 @@
 package io.magnum.jetty.server.data;
 
+import io.magnum.jetty.server.util.JsonMapper;
+
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodb.datamodeling.DynamoDBIgnore;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodb.datamodeling.DynamoDBTable;
 
@@ -56,5 +59,18 @@ public class BenchmarkRecord {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    @DynamoDBIgnore
+    public boolean isMtRecord() {
+        if (notes == null) {
+            return false;
+        }
+        try {
+            JsonMapper.mapper.readValue(notes, Object.class);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 }

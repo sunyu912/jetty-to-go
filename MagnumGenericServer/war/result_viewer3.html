@@ -1,0 +1,457 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>ROAR Viewer</title>
+	<link href="css/examples.css" rel="stylesheet" type="text/css">
+	<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../../excanvas.min.js"></script><![endif]-->
+	<script language="javascript" type="text/javascript" src="js/jquery.js"></script>
+	<script language="javascript" type="text/javascript" src="js/jquery.flot.js"></script>
+	<script language="javascript" type="text/javascript" src="js/jquery.flot.symbol.js"></script>
+	<script type="text/javascript">
+
+	var QueryString = function () {
+	    // This function is anonymous, is executed immediately and 
+	    // the return value is assigned to QueryString!
+	    var query_string = {};
+	    var query = window.location.search.substring(1);
+	    var vars = query.split("&");
+	    for (var i=0;i<vars.length;i++) {
+	        var pair = vars[i].split("=");
+	    	// If first entry with this name
+		    if (typeof query_string[pair[0]] === "undefined") {
+		        query_string[pair[0]] = pair[1];
+		    	// If second entry with this name
+		    } else if (typeof query_string[pair[0]] === "string") {
+	        var arr = [ query_string[pair[0]], pair[1] ];
+	        query_string[pair[0]] = arr;
+	    	// If third or later entry with this name
+		    } else {
+		      query_string[pair[0]].push(pair[1]);
+		    }
+	    } 
+	    return query_string;
+	} ();
+
+	$(function () {		
+		var resultUrl = "https://s3.amazonaws.com/roar-tests/" + QueryString.testId + "/throughput-perm-processed.json";
+		var instanceType = QueryString.type;
+		var app = QueryString.app;
+
+		if (instanceType != null && app != null) {
+		    $('#details').html('Container: ' + app + ' &nbsp;&nbsp; Instance Type: ' + instanceType);	
+		}
+
+		$("<div id='tooltip'></div>").css({
+				position: "absolute",
+				display: "none",
+				border: "1px solid #fdd",
+				padding: "2px",
+				"background-color": "#fee",
+				opacity: 0.80
+			}).appendTo("body");
+		
+		$.getJSON(resultUrl , function( data ) {
+			var perfMap = data.perfMap;
+			var throughputMap = data.throughputMap;
+			var expectedThroughput = data.expectedTimeThroughputMap;
+			var capturedThroughputPoints = data.capturedThroughputPoints;			
+			
+			// draw throughput chart			
+			var perfData = [];			
+			var expectedPerfData = [];
+			var errorCountData = [];
+			var avgLatencyData = [];
+
+			// points data
+			var perfDataPoints = [];
+			var errorCountDataPoints = [];
+			var avgLatencyDataPoints = [];
+
+			$.each( throughputMap, function( index, value ) {
+				console.log("test: " + index + " count: " + value.count + " label(sec): " + value.label);
+				perfData.push([parseInt(value.label), value.count]);
+				errorCountData.push([parseInt(value.label), value.errorCount]);
+				avgLatencyData.push([parseInt(value.label), value.mean]);
+			});
+
+			if (capturedThroughputPoints) {
+				$.each( capturedThroughputPoints, function( index, value ) {
+					console.log("test: " + index + " count: " + value.count + " label(sec): " + value.label);
+					perfDataPoints.push([parseInt(value.label), value.count]);
+					errorCountDataPoints.push([parseInt(value.label), value.errorCount]);
+					avgLatencyDataPoints.push([parseInt(value.label), value.mean]);
+				});
+			}
+
+
+			$.each( expectedThroughput, function( index, value ) {
+				expectedPerfData.push([index, value]);
+			});
+
+			$.plot("#throughput-chart", [
+				{ label: "Expected Throughput", data: expectedPerfData },
+				{ label: "Actual Throughput", data: perfData },
+				{ label: "Avg Throughput", data: perfDataPoints, points: { symbol: "triangle" } },
+				{ label: "Errors", data: errorCountData }				
+				], {
+					legend: {
+						position: "nw"
+					},
+					series: {
+						lines: { show: true },
+						points: { show: true }
+					},
+					xaxis: {
+
+					},
+					yaxis: {
+						min: 0,
+						tickDecimals: 1
+					},
+					grid: {
+						backgroundColor: { colors: [ "#fff", "#eee" ] },
+						clickable: true,
+						hoverable: true,
+						borderWidth: {
+							top: 1,
+							right: 1,
+							bottom: 2,
+							left: 2
+						}
+					}
+				});			
+
+			$("#throughput-chart").bind("plothover", function (event, pos, item) {				
+					if (item) {
+						var x = item.datapoint[0].toFixed(2),
+							y = item.datapoint[1].toFixed(2);
+
+						$("#tooltip").html(item.series.label + " of " + x + " = " + y)
+							.css({top: item.pageY+5, left: item.pageX+5})
+							.fadeIn(200);
+					} else {
+						$("#tooltip").hide();
+					}
+			});
+
+			$.plot("#latency-chart", [
+				{ label: "Average Latency", data: avgLatencyData },
+				{ label: "Avg Average Latency", data: avgLatencyDataPoints, points: { symbol: "triangle" } }				
+				], {	
+					legend: {
+						position: "nw"
+					},
+					series: {
+						lines: { show: true },
+						points: { show: true }
+					},
+					xaxis: {
+
+					},
+					yaxis: {
+						min: 0,
+						tickDecimals: 1
+					},
+					grid: {
+						backgroundColor: { colors: [ "#fff", "#eee" ] },
+						clickable: true,
+						hoverable: true,
+						borderWidth: {
+							top: 1,
+							right: 1,
+							bottom: 2,
+							left: 2
+						}
+					}
+				});
+
+			$("#latency-chart").bind("plothover", function (event, pos, item) {				
+					if (item) {
+						var x = item.datapoint[0].toFixed(2),
+							y = item.datapoint[1].toFixed(2);
+
+						$("#tooltip").html(item.series.label + " of " + x + " = " + y)
+							.css({top: item.pageY+5, left: item.pageX+5})
+							.fadeIn(200);
+					} else {
+						$("#tooltip").hide();
+					}
+			});
+
+			// draw performance charts	
+			var tierAppMap = {};	
+			var cpuSets = [];
+			var memSets = [];
+			var netSets = [];
+			var index = 0;
+			$.each( perfMap, function( host, perfTimeRecordMap ) {				
+				index++;
+				tierAppMap[host] = index;
+				var cpuData = [];
+				var cpuStolen = [];
+				var cpuIOWait = [];
+				var cpuNonIdle = [];
+				var cpuSIRQ = [];
+				var memoryData = [];
+				var networkData = [];
+				var networkEth0 = [];
+				var diskData = [];
+
+				var cpuDataPoints = [];
+				var memDataPoints = [];
+				var netDataPoints = [];
+				var diskDataPoints = [];
+
+				var firstFlag = true;
+				var beginTimestamp = 0;
+
+				var capturedPerfPoints = data.capturedPerfPoints[host];
+
+				$.each( perfTimeRecordMap, function( time, perfRecord ) {
+					if (firstFlag) {
+						beginTimestamp = time;
+						firstFlag = false;
+					}
+					cpuData.push([(time - beginTimestamp) / 1000, perfRecord.cpu]);
+					cpuStolen.push([(time - beginTimestamp) / 1000, perfRecord.cpuSteal]);
+					cpuIOWait.push([(time - beginTimestamp) / 1000, perfRecord.cpuIOWait]);
+					cpuNonIdle.push([(time - beginTimestamp) / 1000, (100 - perfRecord.cpuIdle)]);
+					cpuSIRQ.push([(time - beginTimestamp) / 1000, perfRecord.cpuSoftirq]);
+
+					memoryData.push([(time - beginTimestamp) / 1000, perfRecord.memory]);
+					networkData.push([(time - beginTimestamp) / 1000, perfRecord.network]);
+					networkEth0.push([(time - beginTimestamp) / 1000, perfRecord.networkEth0]);
+					diskData.push([(time - beginTimestamp) / 1000, perfRecord.disk]);
+			    });
+
+			    cpuSets.push({label: "Tier " + index + " CPU", data : cpuNonIdle});
+			    memSets.push({label: "Tier " + index + " MEM", data : memoryData});
+			    netSets.push({label: "Tier " + index + " Network", data : networkEth0});
+
+				if (capturedPerfPoints) {
+					$.each( capturedPerfPoints, function( time, perfRecord ) {
+						if (firstFlag) {
+							beginTimestamp = time;
+							firstFlag = false;
+						}
+						cpuDataPoints.push([(time - beginTimestamp) / 1000, perfRecord.cpu]);
+						memDataPoints.push([(time - beginTimestamp) / 1000, perfRecord.memory]);
+						netDataPoints.push([(time - beginTimestamp) / 1000, perfRecord.networkEth0]);						
+						diskDataPoints.push([(time - beginTimestamp) / 1000, perfRecord.disk]);
+				    });
+				}
+
+				cpuSets.push({data : cpuDataPoints, points: { symbol: "triangle" }, lines: { show: false }});
+				memSets.push({data : memDataPoints, points: { symbol: "triangle" }, lines: { show: false }});
+				netSets.push({data : netDataPoints, points: { symbol: "triangle" }, lines: { show: false }});
+
+			    $.plot("#cpu-chart", cpuSets, 
+			    {
+					legend: {
+						position: "nw"
+					},
+					series: {
+						lines: { show: true },
+						points: { show: true }
+					},
+					xaxis: {
+
+					},
+					yaxis: {
+						min: 0,
+						max: 100,
+						tickDecimals: 1
+					},
+					grid: {
+						backgroundColor: { colors: [ "#fff", "#eee" ] },
+						clickable: true,
+						hoverable: true,
+						borderWidth: {
+							top: 1,
+							right: 1,
+							bottom: 2,
+							left: 2
+						}
+					}
+				});
+
+				$("#cpu-chart").bind("plothover", function (event, pos, item) {				
+					if (item) {
+						var x = item.datapoint[0].toFixed(2),
+							y = item.datapoint[1].toFixed(2);
+
+						$("#tooltip").html(item.series.label + " of " + x + " = " + y)
+							.css({top: item.pageY+5, left: item.pageX+5})
+							.fadeIn(200);
+					} else {
+						$("#tooltip").hide();
+					}
+				});
+
+				$.plot("#mem-chart", memSets, 
+			    {
+					legend: {
+						position: "nw"
+					},
+					series: {
+						lines: { show: true },
+						points: { show: true }
+					},
+					xaxis: {
+
+					},
+					yaxis: {
+						min: 0,
+						max: 100,
+						tickDecimals: 1
+					},
+					grid: {
+						backgroundColor: { colors: [ "#fff", "#eee" ] },
+						clickable: true,
+						hoverable: true,
+						borderWidth: {
+							top: 1,
+							right: 1,
+							bottom: 2,
+							left: 2
+						}
+					}
+				});
+
+				$("#mem-chart").bind("plothover", function (event, pos, item) {				
+					if (item) {
+						var x = item.datapoint[0].toFixed(2),
+							y = item.datapoint[1].toFixed(2);
+
+						$("#tooltip").html(item.series.label + " of " + x + " = " + y)
+							.css({top: item.pageY+5, left: item.pageX+5})
+							.fadeIn(200);
+					} else {
+						$("#tooltip").hide();
+					}
+				});
+				
+				$.plot("#io-chart", netSets, {
+					legend: {
+						position: "nw"
+					},
+					series: {
+						lines: { show: true },
+						points: { show: true }
+					},
+					xaxis: {
+
+					},
+					yaxis: {
+						min: 0,
+						//max: 100,
+						tickDecimals: 1
+					},
+					grid: {
+						backgroundColor: { colors: [ "#fff", "#eee" ] },
+						clickable: true,
+						hoverable: true,
+						borderWidth: {
+							top: 1,
+							right: 1,
+							bottom: 2,
+							left: 2
+						}
+					}
+				});	
+
+				$("#io-chart").bind("plothover", function (event, pos, item) {				
+					if (item) {
+						var x = item.datapoint[0].toFixed(2),
+							y = item.datapoint[1].toFixed(2);
+
+						$("#tooltip").html(item.series.label + " of " + x + " = " + y)
+							.css({top: item.pageY+5, left: item.pageX+5})
+							.fadeIn(200);
+					} else {
+						$("#tooltip").hide();
+					}
+				});			
+			});
+
+			// finally update the tier mapping info
+			$.ajax(
+			{
+				type : "GET",
+				url  : "/v1/roar/test/run/get",
+				traditional : true,
+				data : {
+					id : QueryString.id,
+					timestamp : QueryString.timestamp
+				},
+				success : function(result) {
+					// alert(result);
+					// alert(JSON.parse(result));
+					var config = JSON.parse(result);
+					config = JSON.parse(config.notes);
+					//var config = result[0];
+					var apps = [];
+					apps = config.apps;
+					var tt = [];
+
+					//console.log(JSON.stringify(config));
+					//console.log(JSON.stringify(apps));
+
+					// apps.forEach(function(entry) {
+					//     console.log(entry);
+					// });
+
+					for (var i = 0; i < apps.length; i++) {
+						var index = tierAppMap[apps[i].host];
+						var str = apps[i].containerId + " -> Tier " + index + " -> " + apps[i].type; 
+						tt.push(str);
+					};
+					$('#details').html(JSON.stringify(tt));
+				},
+				error: function (jqXHR, exception) {
+					console.log("Failed to load benchmark record.");
+				}
+			});
+
+		});
+});
+
+</script>
+</head>
+<body>
+
+	<div id="header">
+		<h2>ROAR Viewer</h2>
+		<h5 id="details"></h5>
+	</div>
+
+	<div id="content">
+		<div class="demo-container">
+			<div id="throughput-chart" class="demo-placeholder"></div>						
+		</div>
+
+		<div class="demo-container">
+			<div id="latency-chart" class="demo-placeholder"></div>						
+		</div>
+
+		<div class="demo-container">
+			<div id="cpu-chart" class="demo-placeholder"></div>			
+		</div>
+
+		<div class="demo-container">
+			<div id="mem-chart" class="demo-placeholder"></div>
+		</div>
+
+		<div class="demo-container">
+			<div id="io-chart" class="demo-placeholder"></div>
+		</div>
+	</div>
+
+	<div id="footer">
+		Copyright 2014 Magnum @ Vanderbilt University
+	</div>
+
+</body>
+</html>

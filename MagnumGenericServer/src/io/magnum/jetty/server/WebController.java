@@ -36,6 +36,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.amazonaws.transform.JsonUnmarshallerContext;
+
 
 @Controller
 public class WebController {	
@@ -324,11 +326,20 @@ public class WebController {
         return modelAndView;
     }
 
+    @RequestMapping(value = "test/run/get", method = RequestMethod.GET)
+    public void getTestRunBenchmarkRecord(
+            @RequestParam(value="id", required=true) String id,
+            @RequestParam(value="timestamp", required=true) Long timestamp,
+            HttpServletResponse response) throws Exception {        
+        response.getWriter().write(
+                JsonMapper.mapper.writeValueAsString(dataProvider.getBenchmarkRecord(id, timestamp)));
+    }
+    
     @RequestMapping(value = "test/run/list", method = RequestMethod.GET)
     public ModelAndView getAllTestRunChecker(
             @RequestParam(value="id", required=false) String id,
             HttpServletRequest request,
-            HttpServletResponse response) throws Exception {                
+            HttpServletResponse response) throws Exception {
         ModelAndView modelAndView = new ModelAndView("list_test_result");
         modelAndView.addObject("benchmarkRecords", dataProvider.listBenchmarkRecords(id));
         modelAndView.addObject("title", id == null ? "All" : id);

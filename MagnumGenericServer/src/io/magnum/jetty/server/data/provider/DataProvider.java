@@ -21,4 +21,6 @@ public interface DataProvider {
     public void updateGeneric(Object obj);
     
     public Map<String, Integer> getAvailableApps();
+    
+    public BenchmarkRecord getBenchmarkRecord(String id, Long timestamp);
 }

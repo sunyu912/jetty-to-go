@@ -105,4 +105,9 @@ public class DataProviderImpl implements DataProvider {
         }
         return res;
     }
+
+    @Override
+    public BenchmarkRecord getBenchmarkRecord(String id, Long timestamp) {
+        return dynamoDBMapper.load(BenchmarkRecord.class, id, timestamp);
+    }
 }
