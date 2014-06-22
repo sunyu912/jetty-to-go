@@ -16,7 +16,7 @@
 	<classpathentry kind="lib" path="libs/jetty-policy-8.1.8.v20121106.jar"/>
 	<classpathentry kind="lib" path="libs/jetty-rewrite-8.1.8.v20121106.jar"/>
 	<classpathentry kind="lib" path="libs/jetty-security-8.1.8.v20121106.jar"/>
-	<classpathentry kind="lib" path="libs/jetty-server-8.1.8.v20121106.jar"/>
+	<classpathentry kind="lib" path="libs/jetty-server-8.1.8.v20121106.jar" sourcepath="/Users/yusun/.m2/repository/org/eclipse/jetty/jetty-server/8.1.8.v20121106/jetty-server-8.1.8.v20121106-sources.jar"/>
 	<classpathentry kind="lib" path="libs/jetty-servlet-8.1.8.v20121106.jar"/>
 	<classpathentry kind="lib" path="libs/jetty-servlets-8.1.8.v20121106.jar"/>
 	<classpathentry kind="lib" path="libs/jetty-util-8.1.8.v20121106.jar"/>

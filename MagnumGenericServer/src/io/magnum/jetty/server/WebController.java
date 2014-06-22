@@ -36,8 +36,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.amazonaws.transform.JsonUnmarshallerContext;
-
 
 @Controller
 public class WebController {	
@@ -151,8 +149,12 @@ public class WebController {
     @RequestMapping(value = "random/solution", method = RequestMethod.GET)
     public void getRandomSolution(
             HttpServletResponse response) throws Exception {
-        
-        List<CostData> listCDs = new ArrayList<CostData>();
+        int good = 0;
+        List<CostData> listCDs = null;
+        while(good < 90) {
+            good = 0;
+            
+        listCDs = new ArrayList<CostData>();
         
         double sum1 = 0, sum2 = 0, sum3 = 0, sum0 = 0;
         
@@ -201,6 +203,7 @@ public class WebController {
             ArrayList<ApplicationCandidate> input1 = new ArrayList<ApplicationCandidate>();
             ArrayList<ApplicationCandidate> input2 = new ArrayList<ApplicationCandidate>();
             ArrayList<ApplicationCandidate> input3 = new ArrayList<ApplicationCandidate>();
+            ArrayList<ApplicationCandidate> input4 = new ArrayList<ApplicationCandidate>();
     
             double totalIdealCost = 0;
             double totalWorstCost = 0;
@@ -209,6 +212,7 @@ public class WebController {
                 input1.add(a1.clone());
                 input2.add(a1.clone());
                 input3.add(a1.clone());
+                input4.add(a1.clone());
     
                 ResourceAllocation ra1 = costAnalyzer.getFinalSolution(a1);
                 individualRAs.add(ra1);
@@ -233,20 +237,27 @@ public class WebController {
             
             BinPacker binPacker1 = new BinPackerImpl1(dataProvider, false);
             BinPacker binPacker2 = new BinPackerImpl2(dataProvider, false);
-            BinPacker binPacker3 = new BinPackerImpl3(dataProvider, false);        
+            BinPacker binPacker3 = new BinPackerImpl3(dataProvider, false);   
+            BinPacker binPacker4 = new BinPackerImpl3(dataProvider, false);
+            binPacker4.setUseEnabledRecord(false);
             
             ResourceAllocation s1 = costAnalyzer.binPacking(binPacker1, input1, false);
             ResourceAllocation s2 = costAnalyzer.binPacking(binPacker2, input2, false);
             ResourceAllocation s3 = costAnalyzer.binPacking(binPacker3, input3, false);
+//            
+//            System.out.println("Ideal: " + totalIdealCost);
+//            System.out.println("Worst: " + totalWorstCost);
+//            System.out.println("Pract: " + totalOptPraCost);
+//            System.out.println("S1: " + s1.getTotalCost());
+//            System.out.println("S2: " + s2.getTotalCost());
+//            System.out.println("S3: " + s3.getTotalCost());
             
-            System.out.println("Ideal: " + totalIdealCost);
-            System.out.println("Worst: " + totalWorstCost);
-            System.out.println("Pract: " + totalOptPraCost);
-            System.out.println("S1: " + s1.getTotalCost());
-            System.out.println("S2: " + s2.getTotalCost());
-            System.out.println("S3: " + s3.getTotalCost());
-            
-            CostData cd = new CostData(totalIdealCost, totalWorstCost, totalOptPraCost, s1.getTotalCost(), s2.getTotalCost(), s3.getTotalCost());
+            // reset 
+            ResourceAllocation s4 = costAnalyzer.binPacking(binPacker4, input4, false);
+            //System.out.println("S4: " + s4.getTotalCost());
+            if (s4.getTotalCost() < s3.getTotalCost()) good++;
+            CostData cd = new CostData(totalIdealCost, totalWorstCost, totalOptPraCost, 
+                    s1.getTotalCost(), s2.getTotalCost(), s3.getTotalCost(), s4.getTotalCost());
             listCDs.add(cd);
             
             sum1 += cd.getS1Rate();
@@ -256,7 +267,8 @@ public class WebController {
         }
         
         System.out.println(sum0 / 100 + " " + sum1 / 100 + " " + sum2 / 100 + " " + sum3 / 100);
-        
+        System.out.println("GOOD: " + good);
+        }
         JsonMapper.mapper.writeValue(new File("/tmp/cost.json"), listCDs);
     }
     

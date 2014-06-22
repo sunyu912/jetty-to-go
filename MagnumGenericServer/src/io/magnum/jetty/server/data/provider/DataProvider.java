@@ -18,6 +18,8 @@ public interface DataProvider {
     
     public List<AppPerformanceRecord> listAppPerformanceRecord(String containerId);
     
+    public List<AppPerformanceRecord> listAppPerformanceRecordEnabled(String containerId);
+    
     public void updateGeneric(Object obj);
     
     public Map<String, Integer> getAvailableApps();

@@ -60,30 +60,39 @@
 			var s1 = [];			
 			var s2 = [];
 			var s3 = [];
-
+			var s4 = [];
+			var total = 0;
+		    var good = 0;
+		    
 			$.each( data, function( index, value ) {
 				console.log("test: " + index + " count: " + value.s1 + " label(sec): " + value.s2);
 
-				opt.push([value.optimal, value.optimal]);
+ 				opt.push([value.optimal, value.optimal]);
 				worst.push([value.optimal, value.worst]);
 				prac.push([value.optimal, value.practical]);
 
 				s1.push([value.optimal, value.s1]);
 				s2.push([value.optimal, value.s2]);
 				s3.push([value.optimal, value.s3]);
+				s4.push([value.optimal, value.s4]);
 
-				// opt.push([index, value.optimal]);
-				// worst.push([index, value.worst]);
-				// prac.push([index, value.practical]);
+			    total += (value.worst - value.s1) / value.s1;
+			    if (value.s3 < value.s1) good++;
+				 /* opt.push([index, value.optimal]);
+				 worst.push([index, value.worst]);
+				 prac.push([index, value.practical]);
 
-				// s1.push([index, value.s1]);
-				// s2.push([index, value.s2]);
-				// s3.push([index, value.s3]);
+				 s1.push([index, value.s1]);
+				 s2.push([index, value.s2]);
+				 s3.push([index, value.s3]); */
 
 				// perfData.push([parseInt(value.label), value.count]);
 				// errorCountData.push([parseInt(value.label), value.errorCount]);
 				// avgLatencyData.push([parseInt(value.label), value.mean]);
 			});
+			
+			console.log("final " + total / 100);
+			console.log("good " + good);
 		
 			opt.sort(function(a,b){return a[0]-b[0]});
 			worst.sort(function(a,b){return a[0]-b[0]});
@@ -91,15 +100,17 @@
 			s1.sort(function(a,b){return a[0]-b[0]});
 			s2.sort(function(a,b){return a[0]-b[0]});
 			s3.sort(function(a,b){return a[0]-b[0]});
+			s4.sort(function(a,b){return a[0]-b[0]});
 
 			$.plot("#throughput-chart", [
-				//{ label: "Practically Optimal", data: prac, color: 1 },
+				//{ label: "Practically Optimal (Without Co-location)", data: prac, color: 1 },
 				//{ label: "Least Optimal", data: worst, color: 2 },				
-				 { label: "Most Optimal", data: opt , color: 0},				
+				//{ label: "Most Optimal", data: opt , color: 0},				
 				
-				 // { label: "Biggest Item Sorting", data: s2, color: 12 },
-				 // { label: "No Sorting", data: s3, color: 4},
-				 { label: "C2RAM", data: s1, color: 3 },
+				  // { label: "C2RAM - Sorting by Biggest Item", data: s2, color: 12 },
+				  //{ label: "C2RAM - No Item Sorting", data: s3, color: 4},
+				  { label: "C2RAM (11 EC2 Types)", data: s3, color: 3 },
+				 { label: "C2RAM (11 EC2 Types + 8 GCE Types)", data: s4, color: 7 },
 				], {
 					legend: {
 						position: "nw"

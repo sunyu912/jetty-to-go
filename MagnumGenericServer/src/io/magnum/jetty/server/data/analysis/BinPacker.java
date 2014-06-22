@@ -43,8 +43,15 @@ public abstract class BinPacker {
                     .expireAfterWrite(10, TimeUnit.MINUTES)
                     .build();
     
+    private static final Cache<String, List<AppPerformanceRecord>> recordCache2 = 
+            CacheBuilder.newBuilder()
+                    .maximumSize(1000)
+                    .expireAfterWrite(10, TimeUnit.MINUTES)
+                    .build();     
+    
     private DataProvider dataProvider;
     private boolean enableCotest;
+    private boolean useEnabledRecord = true;
     private String algName;
     
     public BinPacker(DataProvider provider, boolean enableCotest) {
@@ -88,13 +95,23 @@ public abstract class BinPacker {
     abstract protected boolean isCotestAllowed();
     
     private List<AppPerformanceRecord> getAppPerformanceRecords(String containerId) {
-        List<AppPerformanceRecord> records = recordCache.getIfPresent(containerId);
-        if (records == null) {
-            records = dataProvider.listAppPerformanceRecord(containerId);
-            recordCache.put(containerId, records);
-            logger.debug("Missed cache!");
+        List<AppPerformanceRecord> records = null;
+        if (isUseEnabledRecord()) {
+            records = recordCache.getIfPresent(containerId);
         } else {
-            logger.debug("Hit cache!");
+            records = recordCache2.getIfPresent(containerId);
+        }
+        if (records == null) {
+            if (isUseEnabledRecord()) {
+                records = dataProvider.listAppPerformanceRecordEnabled(containerId);
+                recordCache.put(containerId, records);
+            } else {
+                records = dataProvider.listAppPerformanceRecord(containerId);
+                recordCache2.put(containerId, records);
+            }            
+            logger.info("Missed cache!");
+        } else {
+            logger.info("Hit cache!");
         }
         return records;
     }
@@ -490,6 +507,14 @@ public abstract class BinPacker {
 
     public void setAlgName(String algName) {
         this.algName = algName;
+    }
+
+    public boolean isUseEnabledRecord() {
+        return useEnabledRecord;
+    }
+
+    public void setUseEnabledRecord(boolean useEnabledRecord) {
+        this.useEnabledRecord = useEnabledRecord;
     }
 
     private class AppPerformanceRecordComparator implements Comparator<AppPerformanceRecord> {

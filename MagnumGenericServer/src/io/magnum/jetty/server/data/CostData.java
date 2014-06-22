@@ -62,14 +62,24 @@ public class CostData {
     private double s2;
     private double s3;
     
+    private double s4;
+    
     public CostData(double optimal, double worst, double practical, double s1,
-            double s2, double s3) {
+            double s2, double s3, double s4) {
         this.optimal = optimal;
         this.worst = worst;
         this.practical = practical;
         this.s1 = s1;
         this.s2 = s2;
         this.s3 = s3;
+        this.s4 = s4;
+    }
+    
+    public double getS4() {
+        return s4;
+    }
+    public void setS4(double s4) {
+        this.s4 = s4;
     }
 
 }

@@ -37,19 +37,47 @@ public class CostAnalyzer {
                     .expireAfterWrite(10, TimeUnit.MINUTES)
                     .build();
     
+    private static final Cache<String, List<AppPerformanceRecord>> recordCache2 = 
+            CacheBuilder.newBuilder()
+                    .maximumSize(1000)
+                    .expireAfterWrite(10, TimeUnit.MINUTES)
+                    .build();
+    
     @Autowired
     private DataProvider dataProvider;
     
+    private boolean useEnabled = true;
+    
     private List<AppPerformanceRecord> getAppPerformanceRecords(String containerId) {
-        List<AppPerformanceRecord> records = recordCache.getIfPresent(containerId);
+        List<AppPerformanceRecord> records = null;
+        if (useEnabled) {
+            records = recordCache.getIfPresent(containerId);
+        } else {
+            records = recordCache2.getIfPresent(containerId);
+        }
         if (records == null) {
-            records = dataProvider.listAppPerformanceRecord(containerId);
-            recordCache.put(containerId, records);
+            if (useEnabled) {
+                records = dataProvider.listAppPerformanceRecordEnabled(containerId);
+                recordCache.put(containerId, records);
+            } else {
+                records = dataProvider.listAppPerformanceRecord(containerId);
+                recordCache2.put(containerId, records);
+            }            
             logger.info("Missed cache!");
         } else {
             logger.info("Hit cache!");
         }
+        
         return records;
+    }
+    
+    public void toggleDB() {
+        //recordCache.cleanUp();        
+        if (useEnabled) {
+            useEnabled = false;
+        } else {
+            useEnabled = true;
+        }
     }
     
     public List<AppPerformanceRecord> listCost(String containerId, Integer throughput, Double latency) {

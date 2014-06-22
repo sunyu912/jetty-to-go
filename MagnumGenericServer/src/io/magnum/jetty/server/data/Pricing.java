@@ -29,6 +29,21 @@ public class Pricing {
                 put("cc2.8xlarge", 2.0);
                 put("g2.2xlarge", 0.65);
                 put("t1.micro", 0.02);
+                put("f1-micro", 0.014);
+                put("g1-small", 0.0385);
+                put("n1-standard-1", 0.077);
+                put("n1-standard-2", 0.154);
+                put("n1-standard-4", 0.308);
+                put("n1-standard-8", 0.616);
+                put("n1-standard-16", 1.232);
+                put("n1-highmem-2", 0.18);
+                put("n1-highmem-4", 0.36);
+                put("n1-highmem-8", 0.72);
+                put("n1-highmem-16", 1.44);
+                put("n1-highcpu-2", 0.096);
+                put("n1-highcpu-4", 0.192);
+                put("n1-highcpu-8", 0.384);
+                put("n1-highcpu-16", 0.768);
             }};
     
     public static Double getCost(String instanceType) {
