@@ -94,6 +94,15 @@ input[type=checkbox] {
 	-webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
+.demo-container3 {
+    box-sizing: border-box;
+    width: 850px;
+    height: 300px;
+    padding: 20px 15px 0px 15px;
+    margin: 15px auto 0px auto;
+    background: #fff;    
+}
+
 .demo-container2 {
     box-sizing: border-box;
     width: 600px;
