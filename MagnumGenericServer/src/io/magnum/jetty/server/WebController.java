@@ -57,7 +57,7 @@ public class WebController {
 	        @RequestParam("url") String url,
 	        HttpServletResponse response) throws Exception {
 	    ScreenshotRecord record = screenshotManager.getScreenshot(url, false);
-	    dataProvider.addScreenshotRecord(record);
+	    //dataProvider.addScreenshotRecord(record);
 	    response.getWriter().write(mapper.writeValueAsString(record));
 	}
 	
